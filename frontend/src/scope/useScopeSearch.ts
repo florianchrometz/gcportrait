@@ -50,11 +50,18 @@ export function useScopeSearch(
   const auth = useAuth();
   const [state, setState] = useState<ScopeSearchState>({ status: 'idle' });
   const cache = useRef(new Map<string, ScopeSearchState>());
+  const controllerRef = useRef<AbortController | null>(null);
   const kindsKey = options.kinds === undefined ? 'all' : options.kinds.join(',');
   const query = text.trim();
 
   useEffect(() => {
-    if (!options.enabled || !options.active) return undefined;
+    if (!options.enabled) {
+      controllerRef.current?.abort();
+      cache.current.clear();
+      setState({ status: 'idle' });
+      return undefined;
+    }
+    if (!options.active) return undefined;
     const key = `${kindsKey}|${query}`;
     const cached = cache.current.get(key);
     if (cached !== undefined) {
@@ -63,6 +70,7 @@ export function useScopeSearch(
     }
     setState({ status: 'searching', text: query });
     const controller = new AbortController();
+    controllerRef.current = controller;
     const timer = setTimeout(() => {
       const kinds = kindsKey === 'all' ? undefined : (kindsKey.split(',') as ScopeKind[]);
       searchScopes(auth, { query, ...(kinds === undefined ? {} : { kinds }) }, controller.signal).then(
