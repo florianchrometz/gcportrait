@@ -32,6 +32,8 @@ import {
   authenticate,
   googleContextFor,
   invalidRequest,
+  isClientGoneError,
+  sendClientGone,
   SIGN_IN_AGAIN_MESSAGE,
 } from '../upstream/route-support.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
@@ -80,19 +82,28 @@ export function registerPreflightRoute(app: FastifyInstance, options: PreflightR
       const refused = refuseUnavailableMode(request, reply, body.mode, authority);
       if (refused !== null) return refused;
 
-      const result = await runPreflight(
-        {
-          scope: body.scope,
-          mode: body.mode,
-          token,
-          ...(body.quotaProject === undefined ? {} : { quotaProject: body.quotaProject }),
-        },
-        {
-          context: googleContextFor(request, reply, options.upstream),
-          gate: options.gate,
-          serviceAccountEmail: options.gate?.email ?? options.config.backendServiceAccount,
-        },
-      );
+      const context = googleContextFor(request, reply, options.upstream);
+      let result;
+      try {
+        result = await runPreflight(
+          {
+            scope: body.scope,
+            mode: body.mode,
+            token,
+            ...(body.quotaProject === undefined ? {} : { quotaProject: body.quotaProject }),
+          },
+          {
+            context,
+            gate: options.gate,
+            serviceAccountEmail: options.gate?.email ?? options.config.backendServiceAccount,
+          },
+        );
+      } catch (error) {
+        if (isClientGoneError(error, context.signal)) {
+          return sendClientGone(reply);
+        }
+        throw error;
+      }
       if (result.kind === 'unauthenticated')
         return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
       // The gate did not pass: never a 200, whatever the checklist says.

@@ -3,12 +3,14 @@
  * `POST /api/scopes/search` over HTTP against a pretend Resource Manager: the queries sent for what the person
  * typed, the mapping of the three kinds, pagination across them, partial and total failures, and the refusals.
  */
+import { request as httpRequest } from 'node:http';
+
 import type { FastifyInstance } from 'fastify';
 import { describe, expect, it } from 'vitest';
 
 import { answers, fakeGoogle, type FakeGoogle, type Handler } from '../preflight/google.testing.js';
-import { startTestServer } from '../server.testing.js';
-import { CALLER_TOKEN, jsonResponse, type RecordedCall } from '../upstream/google.testing.js';
+import { listenOnLoopback, startTestServer } from '../server.testing.js';
+import { CALLER_TOKEN, jsonResponse, untilAborted, type RecordedCall } from '../upstream/google.testing.js';
 import {
   decodePageToken,
   encodePageToken,
@@ -63,10 +65,12 @@ const ALL = searchBy({
   projects: () => jsonResponse(200, { projects: PROJECTS }),
 });
 
-async function start(search: Handler = ALL): Promise<{ app: FastifyInstance; google: FakeGoogle }> {
+async function start(
+  search: Handler = ALL,
+): Promise<{ app: FastifyInstance; google: FakeGoogle; logs: () => string[] }> {
   const google = fakeGoogle({ search });
-  const { app } = await startTestServer({ fetch: google.fetch });
-  return { app, google };
+  const { app, logs } = await startTestServer({ fetch: google.fetch, logLevel: 'info' });
+  return { app, google, logs: logs.lines };
 }
 
 function search(app: FastifyInstance, body: unknown) {
@@ -398,5 +402,37 @@ describe('POST /api/scopes/search', () => {
       expect(response.statusCode, JSON.stringify(body)).toBe(400);
     }
     expect(google.calls).toHaveLength(0);
+  });
+
+  it('cancels the search and logs no error when the client disconnects mid-flight', async () => {
+    let callSignal: AbortSignal | null = null;
+    const hanging: Handler = (call) => {
+      callSignal = call.signal;
+      return untilAborted(call.signal);
+    };
+    const { app, logs } = await start(hanging);
+    const port = await listenOnLoopback(app);
+    const client = httpRequest(`http://127.0.0.1:${String(port)}/api/scopes/search`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${CALLER_TOKEN}`,
+      },
+    });
+    client.on('error', () => undefined);
+    client.end(JSON.stringify({ query: 'web' }));
+
+    await expect.poll(() => callSignal).not.toBeNull();
+    client.destroy();
+
+    await expect.poll(() => callSignal?.aborted).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const errors = logs().filter(
+      (line) =>
+        line.includes('"severity":"ERROR"') ||
+        line.includes('"level":50') ||
+        line.includes('Unhandled route error'),
+    );
+    expect(errors).toEqual([]);
   });
 });

@@ -16,11 +16,9 @@ import { Readable } from 'node:stream';
 import type { FastifyBaseLogger, FastifyReply } from 'fastify';
 
 import { frameLine } from './frames.js';
+import { ClientGoneError } from '../upstream/route-support.js';
 
-/** The abort reason when the client closed the connection before the response ended. */
-export class ClientGoneError extends Error {
-  override readonly name = 'ClientGoneError';
-}
+export { ClientGoneError };
 
 /** The abort reason when the client stopped taking the response and the server closed the connection. */
 export class ClientStalledError extends Error {
@@ -62,6 +60,10 @@ export function watchResponse(reply: FastifyReply, onEnd: (outcome: StreamOutcom
     ended = true;
     onEnd(stalled ? 'client-stalled' : controller.signal.aborted ? 'client-gone' : 'finished');
   };
+  if ((reply.raw.closed || reply.raw.destroyed) && !reply.raw.writableFinished) {
+    controller.abort(new ClientGoneError('The client closed the connection.'));
+    end();
+  }
   reply.raw.once('close', () => {
     if (!reply.raw.writableFinished)
       controller.abort(new ClientGoneError('The client closed the connection.'));
