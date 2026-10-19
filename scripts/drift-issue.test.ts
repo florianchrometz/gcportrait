@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { spawnSync } from 'node:child_process';
-import { chmodSync } from 'node:fs';
+import { chmodSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -131,6 +131,28 @@ describe('postDriftIssue', () => {
     ]);
     expect(postDriftIssue(options, gh)).toEqual({ action: 'updated', number: 5 });
   });
+
+  it('forwards --label flags to gh issue create when opening a new issue', () => {
+    const { calls, gh } = fakeGh([]);
+    expect(postDriftIssue({ ...options, labels: ['maintenance', 'catalog'] }, gh)).toEqual({
+      action: 'opened',
+      number: 7,
+    });
+    expect(calls[1]?.args).toEqual([
+      'issue',
+      'create',
+      '--repo',
+      'example/repo',
+      '--title',
+      TITLE,
+      '--label',
+      'maintenance',
+      '--label',
+      'catalog',
+      '--body-file',
+      '-',
+    ]);
+  });
 });
 
 describe('drift-issue command line', () => {
@@ -209,6 +231,47 @@ describe('drift-issue command line', () => {
     expect(result.stderr).toContain('gh issue list: HTTP 401');
   });
 
+  it('accepts --label and forwards multiple labels to gh issue create', async () => {
+    const { calls, gh } = fakeGh([]);
+    const args = [
+      ...writeReport({ drift: true, digest: DIGEST, summary: 'catalog drift: 1 added.' }),
+      '--label',
+      'maintenance',
+      '--label',
+      'catalog',
+    ];
+    const result = await runInProcess(() => run(args, env, gh));
+    expect(result.stderr).toBe('');
+    expect(result.status).toBe(0);
+    expect(calls[1]?.args).toEqual([
+      'issue',
+      'create',
+      '--repo',
+      'example/repo',
+      '--title',
+      TITLE,
+      '--label',
+      'maintenance',
+      '--label',
+      'catalog',
+      '--body-file',
+      '-',
+    ]);
+  });
+
+  it('rejects an empty --label', async () => {
+    const { calls, gh } = fakeGh([]);
+    const args = [
+      ...writeReport({ drift: true, digest: DIGEST, summary: 'catalog drift: 1 added.' }),
+      '--label',
+      '',
+    ];
+    const result = await runInProcess(() => run(args, env, gh));
+    expect(result.status).toBe(2);
+    expect(result.stderr).toContain('--label');
+    expect(calls).toEqual([]);
+  });
+
   it(
     'runs the gh on PATH, feeding bodies on standard input',
     () => {
@@ -248,4 +311,19 @@ describe('drift-issue command line', () => {
     },
     SPAWN_TIMEOUT.timeout,
   );
+});
+
+describe('drift workflows', () => {
+  it('pass --label maintenance to drift-issue.mjs in catalog-drift.yml and icon-drift.yml', () => {
+    const root = path.resolve(import.meta.dirname, '..');
+    const catalog = readFileSync(path.join(root, '.github/workflows/catalog-drift.yml'), 'utf8');
+    const icon = readFileSync(path.join(root, '.github/workflows/icon-drift.yml'), 'utf8');
+    for (const [file, content] of [
+      ['catalog-drift.yml', catalog],
+      ['icon-drift.yml', icon],
+    ] as const) {
+      expect(content, file).toContain('node scripts/drift-issue.mjs');
+      expect(content, file).toMatch(/--label\s+maintenance/);
+    }
+  });
 });

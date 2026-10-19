@@ -13,11 +13,12 @@
  *
  * Usage:
  *   node scripts/drift-issue.mjs --title <title> --marker <name> --report <report.json> --markdown <report.md>
- *                                --again <comment opening> --rerun <command>
+ *                                --again <comment opening> --rerun <command> [--label <name> ...]
  *     --title     the issue's title, matched exactly among the open issues
  *     --marker    the marker's name (`catalog-drift`, `icon-drift`)
  *     --again     the comment on a changed drift, before ": <summary>"
  *     --rerun     the command that prints the whole report, named when the body is truncated
+ *     --label     optional label to attach when creating a new issue (repeatable)
  *   Environment: GITHUB_REPOSITORY (owner/name), GITHUB_RUN_ID, GITHUB_SERVER_URL (default https://github.com);
  *   gh reads GH_TOKEN.
  * Exit codes: 0 posted (or no drift), 1 gh failed, 2 a usage error or an unreadable report. Plain ESM, Node
@@ -45,6 +46,7 @@ export const MAX_REPORT_CHARS = 60_000;
  * @property {string} rerun
  * @property {string} runId
  * @property {string} runUrl
+ * @property {readonly string[] | undefined} [labels]
  */
 
 class UsageError extends Error {}
@@ -75,7 +77,7 @@ export function issueBody({ marker, digest, markdown, rerun, runId, runUrl }) {
  * @returns {{ action: 'opened' | 'refreshed' | 'updated', number: number }}
  */
 export function postDriftIssue(options, gh) {
-  const { repo, title, marker, digest } = options;
+  const { repo, title, marker, digest, labels } = options;
   const body = issueBody(options);
   /** @type {unknown} */
   const listed = JSON.parse(
@@ -96,7 +98,11 @@ export function postDriftIssue(options, gh) {
   const open = /** @type {Array<{ number: number, title: string, body?: string | null }>} */ (listed);
   const existing = open.find((issue) => issue.title === title);
   if (existing === undefined) {
-    const url = gh(['issue', 'create', '--repo', repo, '--title', title, '--body-file', '-'], body).trim();
+    const labelArgs = (labels ?? []).flatMap((label) => ['--label', label]);
+    const url = gh(
+      ['issue', 'create', '--repo', repo, '--title', title, ...labelArgs, '--body-file', '-'],
+      body,
+    ).trim();
     const number = Number(/\/issues\/([0-9]+)$/.exec(url)?.[1]);
     if (!Number.isInteger(number)) throw new Error(`gh issue create answered no issue URL: ${url}`);
     return { action: 'opened', number };
@@ -174,6 +180,7 @@ function main(argv, env, gh) {
       markdown: { type: 'string' },
       again: { type: 'string' },
       rerun: { type: 'string' },
+      label: { type: 'string', multiple: true },
     },
     strict: true,
   });
@@ -187,6 +194,12 @@ function main(argv, env, gh) {
     rerun,
   })) {
     if (value === undefined || value === '') throw new UsageError(`--${name} is required`);
+  }
+  const labels = values.label;
+  if (labels !== undefined) {
+    for (const label of labels) {
+      if (label === '') throw new UsageError('--label must not be empty');
+    }
   }
   if (!/^[a-z][a-z0-9-]*$/.test(marker ?? ''))
     throw new UsageError(`--marker must be a lowercase name, not ${String(marker)}`);
@@ -229,6 +242,7 @@ function main(argv, env, gh) {
       rerun: String(rerun),
       runId,
       runUrl: `${server}/${repo}/actions/runs/${runId}`,
+      labels,
     },
     gh,
   );
