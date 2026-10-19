@@ -85,6 +85,7 @@ jobs:
           node scripts/drift-issue.mjs
           --title 'Icon drift: Google Cloud product icons changed'
           --marker icon-drift
+          --label maintenance
           --report "$RUNNER_TEMP/icon-drift.json"
           --markdown "$RUNNER_TEMP/icon-drift.md"
           --again 'The icons on cloud.google.com/icons changed again'

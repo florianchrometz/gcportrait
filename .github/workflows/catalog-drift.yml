@@ -76,6 +76,7 @@ jobs:
           node scripts/drift-issue.mjs
           --title 'Catalog drift: official asset-type list changed'
           --marker catalog-drift
+          --label maintenance
           --report "$RUNNER_TEMP/catalog-drift.json"
           --markdown "$RUNNER_TEMP/catalog-drift.md"
           --again 'The official asset-type list changed again'
