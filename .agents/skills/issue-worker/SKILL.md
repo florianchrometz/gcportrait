@@ -117,7 +117,10 @@ Each worker subagent (or single-issue worker) must complete these four steps in 
    - **Every change**: `pnpm check` (format, lint, typecheck, unit tests, catalog check, provenance,
      licences).
    - **Docs or skills changed**: `node scripts/user-docs.mjs`.
-   - **Website changed**: `pnpm website:build && pnpm website:check`.
+   - **Website or app routes changed**: `pnpm website:build && pnpm website:check`,
+     `pnpm --filter @gcportrait/website run mobile --only layout`,
+     `pnpm --filter @gcportrait/website run demo`, and
+     `pnpm --filter @gcportrait/website run fillable --profile chromium`.
    - **App bundle or media scripts changed**: `CI=true pnpm media`, `pnpm build && pnpm size`,
      `CI=true pnpm e2e --retries=0`, and `node scripts/media.mjs --check && node scripts/exports.mjs --check`.
 

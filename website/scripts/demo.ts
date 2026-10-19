@@ -50,11 +50,11 @@ const STEP_TIMEOUT = 30_000;
 const DOWNLOAD_TIMEOUT = 2 * STEP_TIMEOUT;
 /** A project of demo organisation M ("Retail batch VMs (prod)"), to drill into. */
 const PROJECT = '//cloudresourcemanager.googleapis.com/projects/10000000013';
-/** The app's routes besides the start page, each with a word its page shows. */
+/** The app's routes besides the start page, each with the heading its page (or redirect target) shows. */
 const ROUTES: readonly { readonly path: string; readonly heading: string }[] = [
   { path: 'snapshots', heading: 'Snapshots' },
   { path: 'settings', heading: 'Settings' },
-  { path: 'permissions', heading: 'Permissions' },
+  { path: 'permissions', heading: 'Connect' },
   { path: 'impressum', heading: 'Impressum' },
   { path: 'privacy', heading: 'Privacy notice' },
 ];
