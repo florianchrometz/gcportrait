@@ -6,7 +6,7 @@
  * scope is ready (target.ts). Progress, Cancel and actionable errors below the button (ImportStatus.tsx).
  */
 import { useId, type ReactElement } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { cx } from '../classNames';
 import { scopeName } from '../snapshots/labels';

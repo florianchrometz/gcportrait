@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { useLocation, type To } from 'react-router';
+import { useLocation, type To } from '../router';
 
 import { DIAGRAM_PATH } from '../routes';
 import { useAppState } from '../state';

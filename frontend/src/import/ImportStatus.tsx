@@ -7,7 +7,7 @@
  * permission check, or the notes the import left with "Open the diagram".
  */
 import type { ReactElement } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { cx } from '../classNames';
 import { formatCount } from '../snapshots/labels';

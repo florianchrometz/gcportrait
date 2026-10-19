@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { Route, Routes } from 'react-router';
+import { Route, Routes } from './router';
 
 import { AuthProvider } from './auth/AuthProvider';
 import type { DiagramWorkersFactory } from './diagram/pipeline/workers';
@@ -42,7 +42,7 @@ export type AppProps = {
 };
 
 /**
- * The application: providers and routes (react-router, declarative mode). The router itself is supplied
+ * The application: providers and routes (router.tsx, declarative mode). The router itself is supplied
  * by the caller: BrowserRouter in main.tsx, MemoryRouter in tests. The app store (src/state) sits inside it,
  * bound to its location; the sign-in (src/auth) inside the store, whose `connect` slice it fills; the
  * large-snapshot guard (snapshots/LargeSnapshotGuard.tsx) inside the snapshot library, whose listing it reads.

@@ -52,7 +52,7 @@ vite.config.ts          ports, /api proxy (not in demo mode), build options, lic
                         brand/icon.svg, the static demo's pages (VITE_STATIC_DEMO=1)
 src/main.tsx            fonts, global CSS, BrowserRouter, the page's one IndexedDB connection and the stores over
                         it, the shared diagram workers (`sharedWorkers`), "Try the demo"'s own worker per job
-src/App.tsx             providers and routes (react-router, declarative mode); the app store inside the router
+src/App.tsx             providers and routes (the router, declarative mode); the app store inside the router
 src/branding.ts         WORDMARK, TAGLINE and the non-affiliation wording: FOOTER_NOTICE (with the maintainer
                         link) and NON_AFFILIATION_LONG (section "Branding and the non-affiliation notice" below)
 src/routes.ts           DIAGRAM_PATH, the one route whose hash is a ViewSpec; the router's basename and an app path
@@ -162,7 +162,7 @@ seven slices (`slices.ts`):
 unknown keys are ignored and a malformed value falls back to its default field by field; elsewhere it is the
 default view. A view change goes out through internal `writeView`: the new ViewSpec is encoded with
 `encodeViewSpec`, the slice mirrors that hash at once (two writes in one handler build on each other) and the
-navigator (react-router's `navigate`, keeping the query string on the same route) puts it into the URL; when
+navigator (the router's `navigate`, keeping the query string on the same route) puts it into the URL; when
 the router reports the same hash back nothing changes. A hash the store only read is never rewritten (unknown
 keys stay in the address bar until the next write drops them). Nothing outside the `view` slice ever reaches
 the hash.

@@ -2,12 +2,12 @@
 /**
  * Binds the app store (store.ts) to the router, both ways: the store starts from the router's first location
  * and follows every later one (`syncLocation`, in a layout effect, so the view is current before the browser
- * paints), and the store's view writes go out through react-router's `navigate`, `push` as a new history entry
+ * paints), and the store's view writes go out through the router's `navigate`, `push` as a new history entry
  * and `replace` in place, so the router's location (and the Diagram link's memory, shell/viewHash.tsx) stays
  * current. The query string is kept when the write stays on the same route. Must be rendered inside a router.
  */
 import { useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from '../router';
 
 import { AppStoreContext } from './context';
 import { createAppStore, type AppStore, type StoreOptions } from './store';
@@ -33,7 +33,7 @@ export function AppStateProvider({
   useLayoutEffect(() => {
     store.connectNavigator((target, mode) => {
       const current = locationRef.current;
-      void navigate(
+      navigate(
         {
           pathname: target.pathname,
           search: target.pathname === current.pathname ? current.search : '',

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { Fragment, type ReactElement } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { useLegalPages } from '../demoOnly';
 import { LEGAL_PAGES, legalTarget, type LegalTarget } from './api';

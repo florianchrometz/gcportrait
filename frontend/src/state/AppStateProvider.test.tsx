@@ -9,7 +9,7 @@ import { act, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { decodeViewSpec } from '@gcportrait/model';
 import { useRef, type ReactElement } from 'react';
-import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from 'react-router';
+import { Link, MemoryRouter, Route, Routes, useLocation, useNavigate, useNavigationType } from '../router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AppStateProvider } from './AppStateProvider';
@@ -26,7 +26,7 @@ function Probe(): ReactElement {
   const navigate = useNavigate();
   captured = useAppStore();
   back = () => {
-    void navigate(-1);
+    navigate(-1);
   };
   return (
     <>

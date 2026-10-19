@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Outlet, useLocation } from '../router';
 
 import { FOOTER_NOTICE_LEAD, MAINTAINER_LINK_LABEL, MAINTAINER_NAME, MAINTAINER_URL } from '../branding';
 import { SkipToCanvas } from '../keyboard/SkipToCanvas';

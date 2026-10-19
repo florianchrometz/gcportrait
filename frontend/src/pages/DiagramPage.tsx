@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { DiagramCanvas } from '../diagram/DiagramCanvas';
 import { DEMO_CHOICES, demoViewHash } from '../diagram/demoChoices';

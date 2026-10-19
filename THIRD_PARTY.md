@@ -139,7 +139,7 @@ Google Cloud's, used under the terms Google Cloud states for them; the notices f
 
 <!-- BEGIN GENERATED: npm-dependencies (scripts/check-licenses.mjs --write) -->
 
-62 direct dependencies across 14 workspace projects. "runtime" means
+61 direct dependencies across 14 workspace projects. "runtime" means
 `dependencies`/`optionalDependencies`, "dev" means `devDependencies`. Transitive dependencies are not listed
 here but are checked against the same allowlist and deny list on every run.
 
@@ -193,7 +193,6 @@ here but are checked against the same allowlist and deny list on every run.
 | `prettier` | MIT | (root), packages/icons, packages/layout | dev |
 | `react` | MIT | frontend | runtime |
 | `react-dom` | MIT | frontend | runtime |
-| `react-router` | MIT | frontend | runtime |
 | `rehype-slug` | MIT | website | runtime |
 | `rehype-stringify` | MIT | website | runtime |
 | `remark-gfm` | MIT | website | runtime |

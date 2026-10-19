@@ -6,11 +6,11 @@
  */
 import { render, type RenderResult } from '@testing-library/react';
 import { useLayoutEffect, type ReactNode } from 'react';
-import { MemoryRouter } from 'react-router';
 
 import type { AuthControls } from '../auth';
 import { AuthContext } from '../auth/context';
 import { testAuth } from '../auth/testing';
+import { MemoryRouter } from '../router';
 import { LargeSnapshotGuardProvider } from '../snapshots/LargeSnapshotGuard';
 import type { SnapshotLibrary } from '../snapshots/library';
 import { SnapshotLibraryProvider } from '../snapshots/SnapshotLibraryProvider';

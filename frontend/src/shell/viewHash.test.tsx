@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { MemoryRouter, useNavigate } from 'react-router';
 import { describe, expect, it } from 'vitest';
+
+import { MemoryRouter, useNavigate } from '../router';
 
 import { AppStateProvider } from '../state';
 import { useDiagramLinkTarget } from './viewHash';
@@ -58,7 +59,7 @@ describe('useDiagramLinkTarget', () => {
 
     // Navigate away to /settings
     act(() => {
-      void navigateFn?.('/settings');
+      navigateFn?.('/settings');
     });
 
     // Link target should retain the last diagram hash

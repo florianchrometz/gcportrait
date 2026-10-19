@@ -28,7 +28,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
-import { useLocation, useNavigate } from 'react-router';
+import { useLocation, useNavigate } from '../router';
 
 import { cx } from '../classNames';
 import controls from '../ui/controls.module.css';
@@ -241,8 +241,8 @@ export function useLargeSnapshotGate(ref: SnapshotRef): boolean {
     void guard.confirm({ assets, approximate, ref }, question.signal).then((draw) => {
       if (draw || question.signal.aborted) return;
       const { navigate: go, first: opened } = back.current;
-      if (!opened) void go(-1);
-      else void go(ref.startsWith(DEMO_REF_PREFIX) ? '/' : '/snapshots', { replace: true });
+      if (!opened) go(-1);
+      else go(ref.startsWith(DEMO_REF_PREFIX) ? '/' : '/snapshots', { replace: true });
     });
     return () => {
       question.abort();

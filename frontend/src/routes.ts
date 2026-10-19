@@ -4,7 +4,7 @@
 export const DIAGRAM_PATH = '/diagram';
 
 /**
- * The router's basename for the build's base path (Vite's `base`, `import.meta.env.BASE_URL`): "/", react-router's
+ * The router's basename for the build's base path (Vite's `base`, `import.meta.env.BASE_URL`): "/", the router's
  * default, for an app served at the root of its origin (every instance), and the path without its trailing slash for
  * one served below it (the static demo at `/demo/`). The routes themselves (`/diagram`, `/settings`, …)
  * stay the same either way.

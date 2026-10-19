@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { useEffect, useMemo, useState, type ReactElement } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { cx } from '../classNames';
 import { useLegalPages } from '../demoOnly';

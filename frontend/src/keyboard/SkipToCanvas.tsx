@@ -6,7 +6,7 @@
  * view.
  */
 import type { MouseEvent, ReactElement } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation } from '../router';
 
 import { DIAGRAM_PATH } from '../routes';
 

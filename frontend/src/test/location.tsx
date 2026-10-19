@@ -5,7 +5,7 @@
  * (renderApp, renderControls, renderImport).
  */
 import type { ReactElement } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation } from '../router';
 
 const PROBE = 'location';
 

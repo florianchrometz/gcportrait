@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import page from './Page.module.css';
 import { useDocumentTitle } from './useDocumentTitle';

@@ -4,7 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from '../router';
 
 import { AppStateProvider } from '../state';
 import { fakeLibrary, storedRecord, type FakeLibrary } from '../snapshots/testing';

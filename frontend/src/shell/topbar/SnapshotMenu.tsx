@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { demoSizeOfRef, type SnapshotRef, type SnapshotSourceKind } from '@gcportrait/model';
 import type { ReactElement } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from '../../router';
 
 import type { SceneSource } from '../../diagram/pipeline/protocol';
 import { formatUtc as formatReadTime } from '../../snapshots/labels';
@@ -75,7 +75,7 @@ export function SnapshotMenu({ onPick }: { readonly onPick?: () => void }): Reac
       id: 'snapshots-page',
       label: 'Snapshots page',
       onSelect: () => {
-        void navigate('/snapshots');
+        navigate('/snapshots');
       },
     },
   ];

@@ -5,7 +5,7 @@
  * the preflight and "Pull now" read it from there.
  */
 import type { ReactElement } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import { useAppState, useAppStore } from '../state';
 import { SegmentedControl, type SegmentedOption } from '../ui/SegmentedControl';

@@ -54,7 +54,7 @@ export interface HashTarget {
   readonly hash: string;
 }
 
-/** Puts a hash into the URL (the provider: react-router's `navigate`). */
+/** Puts a hash into the URL (the provider: the router's `navigate`). */
 export type HashNavigator = (target: HashTarget, mode: HistoryMode) => void;
 
 export interface WriteOptions {

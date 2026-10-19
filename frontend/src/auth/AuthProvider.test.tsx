@@ -6,11 +6,11 @@
  */
 import { act, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MemoryRouter } from 'react-router';
 
 import type { PublicConfig } from '../api/config';
 import { AppModeContext } from '../mode';
 import type { PreflightState } from '../preflight/state';
+import { MemoryRouter } from '../router';
 import { DEFAULT_SOURCE_URL } from '../source';
 import { AppStateProvider, useAppStore, type AppStore } from '../state';
 import { publicConfig } from '../test/backend';

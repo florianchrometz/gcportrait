@@ -3,8 +3,9 @@ import { generateOrganization, toCaiAsset } from '@gcportrait/demo-data';
 import { screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import type { ReactElement } from 'react';
-import { useLocation } from 'react-router';
 import { describe, expect, it } from 'vitest';
+
+import { useLocation } from '../router';
 
 import { TEST_TOKEN } from '../auth/testing';
 import { readyConnect } from '../preflight/testing';

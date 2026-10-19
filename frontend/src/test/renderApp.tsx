@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { cleanup, render, type RenderResult } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { MemoryRouter } from 'react-router';
 import { afterEach } from 'vitest';
+
+import { MemoryRouter } from '../router';
 
 import type { PublicConfig } from '../api/config';
 import { readDemoConfig } from '../api/demoConfig';

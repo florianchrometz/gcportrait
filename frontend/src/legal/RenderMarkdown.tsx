@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import type { ReactElement, ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from '../router';
 
 import type { Block, HeadingLevel, Inline } from './markdown';
 
