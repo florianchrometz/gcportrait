@@ -71,6 +71,7 @@ describe('where a key press lands', () => {
     ['an editable element', '<p contenteditable="true"><b data-target>x</b></p>', true, false],
     ['a button', '<button data-target></button>', false, false],
     ['an item of a menu', '<div role="menu"><button data-target></button></div>', false, true],
+    ['a popup marked data-popup', '<div data-popup="true"><button data-target></button></div>', false, true],
     ['a dialog', '<div role="dialog"><button data-target></button></div>', false, true],
     ['an inert subtree', '<div inert><button data-target></button></div>', false, true],
     [

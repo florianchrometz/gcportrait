@@ -21,7 +21,7 @@
 import { useEffect, useRef, useState, type ReactElement } from 'react';
 
 import { useDiagramSession } from '../../diagram/session';
-import { isShortcutKey, isTypingTarget } from '../../keyboard/shortcuts';
+import { isInsidePopup, isShortcutKey, isTypingTarget } from '../../keyboard/shortcuts';
 import { ResultIcon } from '../../search/ResultIcon';
 import { RevealDialog } from '../../search/RevealDialog';
 import { hitDescription, KIND_LABELS, resultCount } from '../../search/text';
@@ -105,7 +105,7 @@ export function SearchBox(): ReactElement {
     const onKeyDown = (event: KeyboardEvent): void => {
       // Matched by the character typed, whatever the layout needed for it (Shift, Option, AltGr).
       if (event.key !== '/' || !isShortcutKey(event)) return;
-      if (isTypingTarget(event.target)) return;
+      if (isTypingTarget(event.target) || isInsidePopup(event.target)) return;
       const input = inputRef.current;
       if (input === null || input.closest('[inert]') !== null) return;
       event.preventDefault();

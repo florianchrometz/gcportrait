@@ -4,15 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { testAuth } from '../auth/testing';
 import { isRecord } from '../guards';
-import {
-  getJson,
-  getPublicJson,
-  isNullableString,
-  postJson,
-  postJsonWithToken,
-  readError,
-  readErrorMessage,
-} from './json';
+import { getPublicJson, isNullableString, postJson, readError, readErrorMessage } from './json';
 
 const TOKEN = 'test-token-123';
 const auth = (token: string | null = TOKEN): ReturnType<typeof testAuth> => testAuth(token);
@@ -85,7 +77,7 @@ describe('getPublicJson', () => {
 
   it('supports parsers returning T | null', async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ count: 99 })));
-    const result = await getJson('/api/test', (raw) => (isTestData(raw) ? raw : null));
+    const result = await getPublicJson('/api/test', (raw) => (isTestData(raw) ? raw : null));
     expect(result).toEqual({ count: 99 });
   });
 
@@ -116,6 +108,15 @@ describe('postJson', () => {
     expect(result).toMatchObject({
       kind: 'response',
       body: { success: true },
+    });
+  });
+
+  it('handles non-JSON response by setting body to undefined', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('Not JSON', { status: 200 })));
+    const result = await postJson(auth(), '/api/action', {});
+    expect(result).toMatchObject({
+      kind: 'response',
+      body: undefined,
     });
   });
 
@@ -150,73 +151,6 @@ describe('postJson', () => {
     expect(result).toEqual({
       kind: 'error',
       message: 'The backend did not answer. Check your connection and try again.',
-    });
-  });
-});
-
-describe('postJsonWithToken', () => {
-  const parseEcho = (raw: unknown): { echo: string } | null =>
-    isRecord(raw) && typeof raw.echo === 'string' ? { echo: raw.echo } : null;
-
-  it('returns ok data when valid', async () => {
-    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ echo: 'hello' })));
-    const res = await postJsonWithToken({
-      auth: auth(),
-      path: '/api/echo',
-      body: { echo: 'hello' },
-      parse: parseEcho,
-    });
-    expect(res).toEqual({ ok: true, data: { echo: 'hello' } });
-  });
-
-  it('handles signed out', async () => {
-    const res = await postJsonWithToken({
-      auth: auth(null),
-      path: '/api/echo',
-      body: {},
-      parse: parseEcho,
-    });
-    expect(res).toEqual({ ok: false, status: 401, unauthorized: true, message: 'Sign in first.' });
-  });
-
-  it('handles abort', async () => {
-    const controller = new AbortController();
-    controller.abort();
-    vi.stubGlobal('fetch', () => Promise.reject(new DOMException('Aborted', 'AbortError')));
-    const res = await postJsonWithToken({
-      auth: auth(),
-      path: '/api/echo',
-      body: {},
-      signal: controller.signal,
-      parse: parseEcho,
-    });
-    expect(res).toEqual({ ok: false, status: 0, aborted: true, message: 'Cancelled.' });
-  });
-
-  it('handles non-2xx', async () => {
-    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ message: 'Forbidden' }, { status: 403 })));
-    const res = await postJsonWithToken({
-      auth: auth(),
-      path: '/api/echo',
-      body: {},
-      parse: parseEcho,
-    });
-    expect(res).toEqual({ ok: false, status: 403, message: 'Forbidden' });
-  });
-
-  it('handles unexpected response shape', async () => {
-    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ something: 'else' })));
-    const res = await postJsonWithToken({
-      auth: auth(),
-      path: '/api/echo',
-      body: {},
-      label: 'echo test',
-      parse: parseEcho,
-    });
-    expect(res).toEqual({
-      ok: false,
-      status: 200,
-      message: 'The backend returned an unexpected echo test response.',
     });
   });
 });

@@ -49,6 +49,20 @@ describe('path parsing and formatting', () => {
     });
   });
 
+  it('preserves current pathname and search when parsing hash-only strings', () => {
+    const current = { pathname: '/diagram', search: '?q=test', hash: '#old' };
+    expect(parsePath('#new', current)).toEqual({
+      pathname: '/diagram',
+      search: '?q=test',
+      hash: '#new',
+    });
+    expect(parsePath('   #new   ', current)).toEqual({
+      pathname: '/diagram',
+      search: '?q=test',
+      hash: '#new',
+    });
+  });
+
   it('parses partial path objects and normalizes search and hash', () => {
     expect(parsePath({ pathname: '/diagram', hash: '#' })).toEqual({
       pathname: '/diagram',
@@ -314,6 +328,41 @@ describe('BrowserRouter', () => {
     expect(screen.getByTestId('browser-path').textContent).toBe('/popped');
     expect(screen.getByTestId('browser-type').textContent).toBe('POP');
   });
+
+  it('updates location synchronously across consecutive navigate calls', async () => {
+    function SyncNavigateProbe(): ReactElement {
+      const location = useLocation();
+      const navigate = useNavigate();
+      return (
+        <div>
+          <output data-testid="sync-path">{location.pathname}</output>
+          <output data-testid="sync-search">{location.search}</output>
+          <output data-testid="sync-hash">{location.hash}</output>
+          <button
+            type="button"
+            onClick={() => {
+              navigate('/diagram?q=1#first');
+              navigate('#second');
+            }}
+          >
+            Double Navigate
+          </button>
+        </div>
+      );
+    }
+
+    const user = userEvent.setup();
+    render(
+      <BrowserRouter basename="/">
+        <SyncNavigateProbe />
+      </BrowserRouter>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Double Navigate' }));
+    expect(screen.getByTestId('sync-path').textContent).toBe('/diagram');
+    expect(screen.getByTestId('sync-search').textContent).toBe('?q=1');
+    expect(screen.getByTestId('sync-hash').textContent).toBe('#second');
+  });
 });
 
 describe('Routes, Route, and Outlet', () => {
@@ -454,5 +503,30 @@ describe('Link and NavLink', () => {
 
     expect(diagram.className).toBe('active-diagram');
     expect(diagram.getAttribute('aria-current')).toBe('page');
+  });
+
+  it('formats Link href with current pathname and search for relative hash target', () => {
+    render(
+      <MemoryRouter initialEntries={['/diagram?filter=vpc#top']}>
+        <Link to="#section">Section Link</Link>
+      </MemoryRouter>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Section Link' });
+    expect(link.getAttribute('href')).toBe('/diagram?filter=vpc#section');
+  });
+
+  it('computes NavLink active state for hash-only target matching current pathname', () => {
+    render(
+      <MemoryRouter initialEntries={['/diagram']}>
+        <NavLink to="#section" className={({ isActive }) => (isActive ? 'active-link' : 'inactive-link')}>
+          Section Nav
+        </NavLink>
+      </MemoryRouter>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Section Nav' });
+    expect(link.className).toBe('active-link');
+    expect(link.getAttribute('aria-current')).toBe('page');
   });
 });
