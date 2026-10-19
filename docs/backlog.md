@@ -134,8 +134,8 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
   backend; reading days from a real organisation needs a sign-in through a real OAuth client
   ([timeline.md](timeline.md), section 4).
 - On a demo-only instance the Snapshots page still offers "Read from Cloud Storage", which needs sign-in.
-- **Command variables:** a stale `aria-invalid` after a fact changes; trim typed values on blur; clear the
-  Copy status on a change; the Copy button's accessible name from typed values.
+- **Command variables:** trim typed values on blur; clear the Copy status on a change; the Copy button's
+  accessible name from typed values.
 - `ThemeProvider.test.tsx` may be flaky (no cause found); fix it if it fails again.
 - **Phones and tablets:** a node's menu has no touch gesture on the canvas and drill-in none of its own (the
   details drawer carries both actions; a long press shows what hover shows, a double tap zooms, and on a chip

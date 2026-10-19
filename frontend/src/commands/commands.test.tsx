@@ -183,6 +183,61 @@ describe('a command’s variables', () => {
     expect(note?.textContent).toBe('1 value to fill');
   });
 
+  it('clears stale invalid marks and typed status when a fact changes', async () => {
+    const view = renderCommands({
+      session: SIGNED_OUT_SESSION,
+      scope: { kind: 'folder', scope: 'folders/20000000001', id: '20000000001' },
+    });
+    const [, inCode] = fields('Folder number');
+    if (inCode === undefined) throw new Error('no field');
+    await userEvent.clear(inCode);
+    await userEvent.type(inCode, 'folders/2');
+    await userEvent.tab();
+    expect(inCode.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText('Expected: digits only.')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Clear values' }).getAttribute('aria-disabled')).toBeNull();
+    view.unmount();
+
+    // Facts change: another folder is picked. The invalid mark and typed flag are cleared.
+    const secondView = renderCommands({
+      session: SIGNED_OUT_SESSION,
+      scope: { kind: 'folder', scope: 'folders/20000000003', id: '20000000003' },
+    });
+    const [panelField, inCodeAfter] = fields('Folder number');
+    expect(panelField?.value).toBe('20000000003');
+    expect(panelField?.getAttribute('aria-invalid')).toBeNull();
+    expect(inCodeAfter?.getAttribute('aria-invalid')).toBeNull();
+    expect(screen.queryByText('Expected: digits only.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Clear values' }).getAttribute('aria-disabled')).toBe('true');
+    secondView.unmount();
+
+    // With an active typed value on another variable, typed stays true while the stale invalid mark is cleared.
+    const thirdView = renderCommands({
+      session: SIGNED_OUT_SESSION,
+      scope: { kind: 'folder', scope: 'folders/20000000001', id: '20000000001' },
+    });
+    const [bucketInput] = fields('Bucket');
+    if (bucketInput === undefined) throw new Error('no field');
+    await userEvent.type(bucketInput, 'demo-exports-1');
+    const [, inCodeThird] = fields('Folder number');
+    if (inCodeThird === undefined) throw new Error('no field');
+    await userEvent.clear(inCodeThird);
+    await userEvent.type(inCodeThird, 'folders/2');
+    await userEvent.tab();
+    thirdView.unmount();
+
+    renderCommands({
+      session: SIGNED_OUT_SESSION,
+      scope: { kind: 'folder', scope: 'folders/20000000004', id: '20000000004' },
+    });
+    const [panelFolderFourth, inCodeFourth] = fields('Folder number');
+    expect(panelFolderFourth?.value).toBe('20000000004');
+    expect(panelFolderFourth?.getAttribute('aria-invalid')).toBeNull();
+    expect(inCodeFourth?.getAttribute('aria-invalid')).toBeNull();
+    expect(screen.queryByText('Expected: digits only.')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Clear values' }).getAttribute('aria-disabled')).toBeNull();
+  });
+
   it('keep their values for the tab’s session: a reload shows them again; Clear values forgets them', async () => {
     const view = renderCommands();
     const [bucket] = fields('Bucket');

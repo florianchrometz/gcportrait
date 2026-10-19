@@ -86,9 +86,14 @@ export function commandFacts({
   return facts;
 }
 
+/** Whether `entry` is active for `fact`: typed over the fact known now, or typed when no fact was known. */
+export function isEntryActive(entry: Entry | undefined, fact: string | undefined): entry is Entry {
+  return entry !== undefined && (fact === undefined || entry.basis === fact);
+}
+
 /** The value a variable shows: what was typed over the fact known now, else that fact, else what was typed. */
 export function effectiveValue(entry: Entry | undefined, fact: string | undefined): string {
-  if (entry !== undefined && (fact === undefined || entry.basis === fact)) return entry.value;
+  if (isEntryActive(entry, fact)) return entry.value;
   return fact ?? '';
 }
 
@@ -100,6 +105,22 @@ export function effectiveValues(entries: Entries, facts: Facts): Readonly<Record
     values[name] = effectiveValue(entries[name], known[name]);
   }
   return values;
+}
+
+/** Whether any entry in `entries` is active for the current facts. */
+export function hasActiveEntries(entries: Entries, facts: Facts): boolean {
+  const known: Readonly<Record<string, string | undefined>> = facts;
+  return Object.entries(entries).some(([name, entry]) => isEntryActive(entry, known[name]));
+}
+
+/** Variables whose invalid mark is active (the field's typed value is active for the current fact). */
+export function activeInvalidVariables(
+  invalid: ReadonlySet<string>,
+  entries: Entries,
+  facts: Facts,
+): ReadonlySet<string> {
+  const known: Readonly<Record<string, string | undefined>> = facts;
+  return new Set([...invalid].filter((name) => isEntryActive(entries[name], known[name])));
 }
 
 /** Whether `value` has the format of the variable `name`; an empty value and an unregistered name do. */

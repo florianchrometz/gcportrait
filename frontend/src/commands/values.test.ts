@@ -13,11 +13,14 @@ import { referenceRows } from '../preflight/PermissionsGuide';
 import { BLOCKED_ANSWER } from '../preflight/testing';
 import { SCOPE_KINDS } from '../scope/scopeName';
 import {
+  activeInvalidVariables,
   commandFacts,
   copiedMessage,
   effectiveValue,
   effectiveValues,
   fieldValue,
+  hasActiveEntries,
+  isEntryActive,
   matchesFormat,
   readStoredEntries,
   resolveCommand,
@@ -96,6 +99,28 @@ describe('the value a variable shows', () => {
     expect(matchesFormat('YOUR_FOLDER_ID', '')).toBe(true);
     expect(matchesFormat('YOUR_PROJECT_ID', ' demo-web-1 ')).toBe(true);
     expect(matchesFormat('YOUR_NOTHING', '!')).toBe(true);
+  });
+
+  it('determines whether an entry is active and filters stale invalid marks and typed status', () => {
+    const entry = { value: '20000000002', basis: '20000000001' };
+    expect(isEntryActive(entry, '20000000001')).toBe(true);
+    expect(isEntryActive(entry, '20000000003')).toBe(false);
+    expect(isEntryActive(entry, undefined)).toBe(true);
+    expect(isEntryActive(undefined, '20000000001')).toBe(false);
+    expect(isEntryActive(undefined, undefined)).toBe(false);
+
+    const entries = { YOUR_FOLDER_ID: entry, YOUR_BUCKET: { value: 'demo-exports-1', basis: '' } };
+    expect(hasActiveEntries(entries, { YOUR_FOLDER_ID: '20000000001' })).toBe(true);
+    expect(hasActiveEntries(entries, { YOUR_FOLDER_ID: '20000000003' })).toBe(true); // bucket is still active
+    expect(hasActiveEntries({ YOUR_FOLDER_ID: entry }, { YOUR_FOLDER_ID: '20000000003' })).toBe(false);
+
+    const invalid = new Set(['YOUR_FOLDER_ID', 'YOUR_BUCKET']);
+    expect(activeInvalidVariables(invalid, entries, { YOUR_FOLDER_ID: '20000000001' })).toEqual(
+      new Set(['YOUR_FOLDER_ID', 'YOUR_BUCKET']),
+    );
+    expect(activeInvalidVariables(invalid, entries, { YOUR_FOLDER_ID: '20000000003' })).toEqual(
+      new Set(['YOUR_BUCKET']),
+    );
   });
 });
 
