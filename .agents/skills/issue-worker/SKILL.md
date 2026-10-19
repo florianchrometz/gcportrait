@@ -1,6 +1,6 @@
 ---
 name: issue-worker
-description: Orchestrated procedure for working GitHub issues with subagents on a feature branch — coordinator triage by release milestone, conflict-free partitioning across the main checkout and .worktrees/ subagent lanes, re-evaluating issue accuracy, commenting findings, details and plan on each issue before starting work, scope verification gates, and integrating and pushing commits onto the feature branch while leaving pull requests to the maintainer.
+description: Orchestrated procedure for working GitHub issues with subagents on a feature branch — coordinator triage by release milestone and linked branches, conflict-free partitioning across the main checkout and .worktrees/ subagent lanes, scanning and re-evaluating issue accuracy, commenting findings, details and plan, tagging and linking each issue to a branch before starting work, scope verification gates, and integrating and pushing commits onto the feature branch while leaving pull requests to the maintainer.
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
@@ -34,9 +34,12 @@ orchestrating and working one or more GitHub issues on a feature branch using su
 When working one or more issues, the top-level assistant acts as the **coordinator** and delegates each
 self-contained issue to a dedicated **worker subagent**:
 
-1. **Triage and clarify upfront**:
+1. **Triage, check linked branches and clarify upfront**:
    - Fetch open issues (`gh issue list --state open --json number,title,milestone,labels,body`) and sort them
      by milestone version.
+   - Check linked branches for each candidate issue (`gh issue develop --list <N>`). If an issue is already
+     linked to an active branch from another run or contributor, inspect that branch first so work is never
+     duplicated.
    - Read each target issue (`gh issue view <N> --comments`). If an issue has product, UX or scope ambiguity
      that requires maintainer input, ask the maintainer before spawning worker subagents.
 2. **Partition issues into conflict-free lanes**:
@@ -63,28 +66,39 @@ self-contained issue to a dedicated **worker subagent**:
      multiple parallel commits touched shared docs or tests.
    - Push the updated milestone feature branch to `origin` (`git push -u origin <feature-branch>`).
 
-## 3. Worker subagent step 1: re-evaluate the issue and comment before touching code
+## 3. Worker subagent step 1: scan, plan, tag and link the issue before touching code
 
-Each worker subagent (or single-issue worker) must complete these steps before editing any file:
+Each worker subagent (or single-issue worker) must complete these four steps in order before editing any file:
 
-1. Read [AGENTS.md](../../../AGENTS.md), the `AGENTS.md` of every top-level folder the issue touches, the
-   [contributor-workflow skill](../contributor-workflow/SKILL.md), and the domain skill for that area.
-2. Read the full issue (`gh issue view <N> --comments`) and inspect every file and symbol it names in the
-   assigned checkout or worktree.
-3. Verify whether the issue description still matches the codebase:
-   - **Already resolved**: if the behaviour is already fixed on the branch, make no redundant edits and report
-     the commit or file that resolved it on the issue.
-   - **Partially resolved or shifted**: adapt the plan to what genuinely remains.
-   - **Multi-part issue**: complete one coherent, self-contained slice, commit with `Part of #<N>; <what
-     remains>.`, and note what remains on the issue.
-4. **Comment on the issue before starting work**: prior to editing any files, post a structured comment on the
-   GitHub issue (`gh issue comment <N> --body-file -`) outlining:
-   - **Findings**: what inspecting the current tree showed (exact files, symbols and current behaviour, and
-     whether any part of the issue has already shifted or been resolved).
-   - **Details**: root cause or design context, affected packages/surfaces, and the repository rules or
-     constraints that apply.
-   - **Plan**: the step-by-step plan to solve and verify the issue (files to change, tests to write or update
-     first, and verification gates to run).
+1. **Scan the codebase and verify the issue**:
+   - Read [AGENTS.md](../../../AGENTS.md), the `AGENTS.md` of every top-level folder the issue touches, the
+     [contributor-workflow skill](../contributor-workflow/SKILL.md), and the domain skill for that area.
+   - Read the full issue (`gh issue view <N> --comments`) and inspect every file and symbol it names in the
+     assigned checkout or worktree.
+   - Verify whether the issue description still matches the codebase:
+     - **Already resolved**: if the behaviour is already fixed on the branch, make no redundant edits and
+       report the commit or file that resolved it on the issue.
+     - **Partially resolved or shifted**: adapt the plan to what genuinely remains.
+     - **Multi-part issue**: complete one coherent, self-contained slice, commit with `Part of #<N>; <what
+       remains>.`, and note what remains on the issue.
+2. **Plan and comment on the issue**:
+   - Prior to editing any files, post a structured comment on the GitHub issue
+     (`gh issue comment <N> --body-file -`) outlining:
+     - **Findings**: what inspecting the current tree showed (exact files, symbols and current behaviour, and
+       whether any part of the issue has already shifted or been resolved).
+     - **Details**: root cause or design context, affected packages/surfaces, and the repository rules or
+       constraints that apply.
+     - **Plan**: the step-by-step plan to solve and verify the issue (files to change, tests to write or
+       update first, and verification gates to run).
+3. **Tag the issue**:
+   - Ensure the issue has accurate `area: *` and kind labels and the target release milestone; add any missing
+     metadata via `gh issue edit <N> --add-label "<label>" --milestone "<milestone>"`.
+4. **Link the issue to the branch**:
+   - Check `gh issue develop --list <N>`. When creating the target branch on `origin` (for example the first
+     issue on `work/<milestone>` or a dedicated issue branch), create and link the remote branch in one step
+     with `gh issue develop <N> --name <branch> --base main` (GitHub's `createLinkedBranch` GraphQL mutation
+     creates and links a new remote branch, whereas attaching an already-existing shared remote branch to
+     additional issues is only available in the GitHub web UI's Development sidebar).
 
 ## 4. Worker subagent step 2: test-first changes and verification gate
 

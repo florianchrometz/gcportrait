@@ -18,7 +18,7 @@ with rules of its own; a skill points there for a rule and never restates how or
 | `skills/gcp-asset-catalog/` | How the asset catalog is structured, how to add a type or relation rule, normalisers, tiers, fixtures, coverage and drift tooling. Includes the official asset-type list snapshot and the relation seed. |
 | `skills/cai-ingestion/` | Cloud Asset Inventory facts: list/export APIs, limits, asset shape, permissions, quota project, timeline readTime, gotchas, demo-data realism. |
 | `skills/contributor-workflow/` | Fork → run → test → self-host → PR path, provenance rules, definition of done with what each test layer covers, review checklist, releases and versioning. |
-| `skills/issue-worker/` | Orchestrating GitHub issues with worker subagents: milestone-based release priority, conflict-free main-checkout and `.worktrees/` lanes, issue accuracy re-evaluation, commenting findings, details and plan before work starts, scope verification gates, and integrating and pushing commits onto a feature branch while leaving PR creation, review and merging to the maintainer. |
+| `skills/issue-worker/` | Orchestrating GitHub issues with worker subagents: milestone-based release priority, conflict-free main-checkout and `.worktrees/` lanes, scanning and re-evaluating issue accuracy, commenting findings/details/plan, tagging and linking each issue to a branch (`gh issue develop`) before work starts, scope verification gates, and integrating and pushing commits onto a feature branch while leaving PR creation, review and merging to the maintainer. |
 
 How to load a skill:
 - Codex CLI, Gemini CLI, Cursor and GitHub Copilot find the skills here by themselves. Claude Code loads
