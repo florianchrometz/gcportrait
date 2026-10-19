@@ -179,6 +179,7 @@ function SavedViewsPanel({ onApplied }: { readonly onApplied: () => void }): Rea
               <RenameRow
                 key={view.id}
                 view={view}
+                onStatus={setStatus}
                 onDone={(message) => {
                   refocus.current = view.id;
                   setEditing(null);
@@ -238,9 +239,11 @@ function SavedViewsPanel({ onApplied }: { readonly onApplied: () => void }): Rea
 /** A saved view's row while it is renamed: Enter or Save keeps the name, Escape or Cancel drops it. */
 function RenameRow({
   view,
+  onStatus,
   onDone,
 }: {
   readonly view: StoredView;
+  readonly onStatus: (message: string) => void;
   readonly onDone: (message: string | null) => void;
 }): ReactElement {
   const store = useSavedViewStore();
@@ -257,16 +260,27 @@ function RenameRow({
   const submit = (event: SyntheticEvent<HTMLFormElement>): void => {
     event.preventDefault();
     const clean = cleanViewName(name);
-    if (clean === '' || clean === view.name) {
+    if (clean === view.name) {
       onDone(null);
       return;
     }
+    if (clean === '') {
+      onStatus('Give the view a name first.');
+      inputRef.current?.focus();
+      return;
+    }
     store.rename(view.id, clean).then(
-      () => {
+      (renamed) => {
+        if (renamed === null) {
+          onDone('The view could not be renamed.');
+          return;
+        }
         onDone(`Renamed “${view.name}” to “${clean}”.`);
       },
-      () => {
-        onDone('The view could not be renamed.');
+      (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'The view could not be renamed.';
+        onStatus(message);
+        inputRef.current?.focus();
       },
     );
   };

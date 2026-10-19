@@ -7,7 +7,7 @@
  */
 import 'fake-indexeddb/auto';
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useFreshIndexedDb } from '../test/indexedDb';
 import { cleanViewName, createSavedViewStore, MAX_VIEW_NAME } from './savedViewStore';
@@ -104,6 +104,48 @@ describe('the saved-view store', () => {
     expect((await store.list()).map((view) => view.name)).toEqual(['Session only']);
     await store.remove('view-1');
     expect(await store.list()).toEqual([]);
+  });
+
+  it('preserves session fallback views when IndexedDB write fails on an open database', async () => {
+    const db = await database();
+    const store = createSavedViewStore(Promise.resolve(db), { now: clock(), newId: ids() });
+    await store.save('Persisted view', 'snapshot=demo:S');
+
+    // Simulate quota exceeded on put
+    const spy = vi.spyOn(db, 'put').mockRejectedValueOnce(new DOMException('full', 'QuotaExceededError'));
+    const failed = await store.save('Fallback view', 'snapshot=demo:M');
+    expect(failed.persisted).toBe(false);
+
+    // list() should return both the persisted view and the in-memory fallback
+    const views = await store.list();
+    expect(views.map((v) => v.name)).toEqual(['Fallback view', 'Persisted view']);
+
+    // When a subsequent write succeeds, fallback is persisted and removed from memory
+    spy.mockRestore();
+    const updated = await store.save('Fallback view', 'snapshot=demo:L');
+    expect(updated.persisted).toBe(true);
+    expect((await store.list()).map((v) => v.name)).toEqual(['Fallback view', 'Persisted view']);
+  });
+
+  it('refuses to rename to an existing view name (case-insensitively)', async () => {
+    const store = createSavedViewStore(database(), { now: clock(), newId: ids() });
+    await store.save('First view', 'snapshot=demo:S');
+    await store.save('Second view', 'snapshot=demo:M');
+
+    // Renaming to another view's name is rejected
+    await expect(store.rename('view-1', 'Second view')).rejects.toThrow(
+      'A saved view named “Second view” already exists.',
+    );
+    await expect(store.rename('view-1', 'second VIEW')).rejects.toThrow(
+      'A saved view named “second VIEW” already exists.',
+    );
+
+    // Renaming the view to the same name with different casing succeeds
+    const renamed = await store.rename('view-1', 'FIRST VIEW');
+    expect(renamed?.name).toBe('FIRST VIEW');
+
+    // Renaming to an empty name is rejected
+    await expect(store.rename('view-1', '   ')).rejects.toThrow('needs a name');
   });
 
   it('cleans names: trimmed, single spaces, at most MAX_VIEW_NAME characters (never half a character)', () => {
