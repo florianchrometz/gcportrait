@@ -18,10 +18,12 @@ owns:
   - 'cloudcontrolspartner.googleapis.com/*'
   - 'cloudquotas.googleapis.com/*'
   - 'connectors.googleapis.com/*'
+  - 'faulttesting.googleapis.com/*'
   - 'financialservices.googleapis.com/*'
   - 'firebase.googleapis.com/*'
   - 'firebasedataconnect.googleapis.com/*'
   - 'firebaserules.googleapis.com/*'
+  - 'firebasestorage.googleapis.com/*'
   - 'integrations.googleapis.com/*'
   - 'krmapihosting.googleapis.com/*'
   - 'livestream.googleapis.com/*'
@@ -35,8 +37,9 @@ owns:
   - 'transcoder.googleapis.com/*'
   - 'videostitcher.googleapis.com/*'
   - 'workloadmanager.googleapis.com/*'
-types: {} # every owned type is mapped: products/<service>.yaml for logging, monitoring, osconfig,
-# cloudasset, cloudbilling, cloudquotas, serviceusage, servicemanagement, servicedirectory, apphub,
-# workloadmanager, migrationcenter, backupdr, integrations, connectors, apigee, apihub, firebase,
-# firebaserules, firebasedataconnect, livestream, transcoder, videostitcher, financialservices,
-# blockchainnodeengine, krmapihosting and cloudcontrolspartner.
+types:
+  faulttesting.googleapis.com/Experiment: fault injection testing; unmapped pending fixture and rules
+  faulttesting.googleapis.com/ExperimentTemplate: fault injection testing; unmapped pending fixture and rules
+  faulttesting.googleapis.com/Validation: fault injection testing; unmapped pending fixture and rules
+  firebasestorage.googleapis.com/Bucket: Firebase storage bucket; unmapped pending fixture and rules
+  firebasestorage.googleapis.com/DefaultBucket: Firebase storage bucket; unmapped pending fixture and rules

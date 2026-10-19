@@ -40,10 +40,6 @@ runs:
         check-latest: true
         cache: ${{ inputs.cache == 'true' && inputs.install == 'true' && 'pnpm' || '' }}
 
-    - name: Configure Node heap ceiling
-      shell: bash
-      run: echo "NODE_OPTIONS=--max-old-space-size=4096" >> "$GITHUB_ENV"
-
     - name: Install dependencies
       if: inputs.install == 'true'
       shell: bash

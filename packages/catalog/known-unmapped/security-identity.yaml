@@ -44,3 +44,4 @@ owns:
 types:
   beyondcorp.googleapis.com/ClientConnectorService: client connector, shut down on 2023-12-31; the API reference documents no fields any more
   beyondcorp.googleapis.com/ClientGateway: client connector, shut down on 2023-12-31; the API reference documents no fields any more
+  privilegedaccessmanager.googleapis.com/Entitlement: privileged access manager entitlement; unmapped pending fixture and rules

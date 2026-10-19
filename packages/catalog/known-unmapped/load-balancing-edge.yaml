@@ -47,5 +47,5 @@ owns:
   - networksecurity.googleapis.com/ServerTlsPolicy
   - networksecurity.googleapis.com/UrlList
   - 'networkservices.googleapis.com/*'
-types: {} # every owned type is mapped (products/compute.googleapis.com.load-balancing-edge.yaml,
-# certificatemanager, networkservices, apigateway, domains, and the three networksecurity …load-balancing-edge*.yaml files)
+types:
+  networkservices.googleapis.com/AgentGateway: service mesh agent gateway; unmapped pending fixture and rules
