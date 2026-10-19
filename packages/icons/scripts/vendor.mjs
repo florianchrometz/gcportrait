@@ -174,7 +174,9 @@ async function main(argv) {
       add(`${key}.svg`, 'category', source);
       icons[key] = { file: `${key}.svg`, kind: 'category' };
     }
-    for (const [key, entry] of Object.entries(mapping.icons).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
+    for (const [key, entry] of Object.entries(mapping.icons).sort(([a], [b]) =>
+      a < b ? -1 : a > b ? 1 : 0,
+    )) {
       if (entry.own !== undefined) continue;
       /** @type {SetName | undefined} */
       let chosen;

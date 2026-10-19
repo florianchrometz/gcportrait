@@ -527,10 +527,10 @@ pnpm demo:static --out DIR --base /demo/ --impressum-url URL --privacy-url URL -
 - its configuration built in instead of `GET /api/config`: what a demo-only instance answers, plus the version
   (`git describe`; the release workflow passes the tag), the footer's "Source (Apache-2.0)" link
   (`VITE_SOURCE_URL`, or the repository) and the Impressum and privacy notice on the maintainer's website,
-  which the footer links
-  in the same tab, named as an external site (the same two pages as the site's footer; a test keeps the
-  defaults of the command and `website/src/site.ts` equal). The bundle carries no sign-in code at all: no
-  Google sign-in script, no tokeninfo, no `/api/config`;
+  which the app's footer links in a new tab with `rel="noopener"` so the in-memory session is preserved (on
+  the static website, `Footer.astro` links them in the same tab; a test keeps the defaults of the command and
+  `website/src/site.ts` equal). The bundle carries no sign-in code at all: no Google sign-in script, no
+  tokeninfo, no `/api/config`;
 - `index.html` and a byte-for-byte copy of it for each route of the app: `diagram.html`, `snapshots.html`,
   `permissions.html`, `settings.html`, `impressum.html`, `privacy.html`.
 

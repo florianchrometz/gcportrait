@@ -526,8 +526,8 @@ export function driftReport({ mapping, manifest, index, products, page, current,
       });
     }
   }
-  newerAvailable.sort(
-    (a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : a.entry < b.entry ? -1 : a.entry > b.entry ? 1 : 0),
+  newerAvailable.sort((a, b) =>
+    a.key < b.key ? -1 : a.key > b.key ? 1 : a.entry < b.entry ? -1 : a.entry > b.entry ? 1 : 0,
   );
 
   const counts = {

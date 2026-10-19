@@ -51,6 +51,8 @@ location.hash = encodeViewSpec({ ...spec, lens: 'networking' });
 | `TimestampSchema` | an RFC 3339 timestamp with `Z` or an offset and any fractional precision |
 | `DateSchema` | a real calendar date `YYYY-MM-DD` (`2026-02-29` is rejected) |
 | `CountSchema` | a non-negative integer |
+| `isDay(value)` | type guard: true when value is a valid calendar day string `YYYY-MM-DD` in UTC |
+| `dayOfReadTime(readTime)` | UTC calendar day `YYYY-MM-DD` of an RFC 3339 timestamp, or `null` if invalid |
 
 ## Locations
 

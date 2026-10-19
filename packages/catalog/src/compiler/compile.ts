@@ -980,9 +980,7 @@ export function compileCatalog(
     unmapped: {
       total: officialTotal - mappedTotal,
       known: unmappedKnown,
-      knownByReason: Object.fromEntries(
-        Object.entries(knownByReason).sort(([a], [b]) => compareText(a, b)),
-      ),
+      knownByReason: Object.fromEntries(Object.entries(knownByReason).sort(([a], [b]) => compareText(a, b))),
       unlisted,
     },
     notOfficial: {
