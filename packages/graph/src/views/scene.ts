@@ -215,7 +215,7 @@ export function preparedViewKey(spec: ViewSpec, env: SceneEnv): string {
       : {
           kind: spec.focus.kind,
           params: Object.fromEntries(
-            Object.entries(spec.focus.params)
+            Object.entries(spec.focus.params as Record<string, unknown>)
               .filter(([, v]) => v !== undefined)
               .sort(([a], [b]) => compareStrings(a, b)),
           ),
@@ -224,7 +224,7 @@ export function preparedViewKey(spec: ViewSpec, env: SceneEnv): string {
     spec.lens,
     canonicalFocus,
     spec.root ?? null,
-    Object.entries(filters)
+    Object.entries(filters as Record<string, unknown>)
       .filter(([, v]) => v !== undefined)
       .sort(([a], [b]) => compareStrings(a, b)),
     env.rootLabel ?? null,

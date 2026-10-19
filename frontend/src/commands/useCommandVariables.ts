@@ -17,7 +17,13 @@ import {
   setVariable,
   subscribeVariables,
 } from './store';
-import { commandFacts, effectiveValues, type Facts } from './values';
+import {
+  activeInvalidVariables,
+  commandFacts,
+  effectiveValues,
+  hasActiveEntries,
+  type Facts,
+} from './values';
 
 const NO_SUBSCRIPTION = (): (() => void) => () => undefined;
 
@@ -65,8 +71,8 @@ export function useCommandVariables(): CommandVariables {
     const known: Readonly<Record<string, string | undefined>> = facts;
     return {
       values,
-      invalid,
-      typed: Object.keys(entries).length > 0,
+      invalid: activeInvalidVariables(invalid, entries, facts),
+      typed: hasActiveEntries(entries, facts),
       set: (name, raw) => {
         setVariable(name, raw, known[name]);
       },

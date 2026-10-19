@@ -287,7 +287,7 @@ describe('a prepared view', () => {
 
   it('canonicalizes undefined filter entries and focus parameter order', () => {
     const key = preparedViewKey(base, ENV);
-    const withUndefinedFilters: ViewSpec = {
+    const withUndefinedFilters = {
       ...base,
       filters: {
         ...base.filters,
@@ -295,7 +295,7 @@ describe('a prepared view', () => {
         projects: undefined,
         folders: undefined,
       },
-    };
+    } as unknown as ViewSpec;
     expect(preparedViewKey(withUndefinedFilters, ENV)).toBe(key);
 
     const focus1: ViewSpec = {
