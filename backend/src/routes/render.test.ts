@@ -42,6 +42,7 @@ import {
   CALLER_TOKEN,
   caiPager,
   fakeAccount,
+  untilAborted,
   type RecordedCall,
 } from '../upstream/google.testing.js';
 import { createRenderLock, RENDER_LOCK_KEY } from './render.js';
@@ -661,6 +662,39 @@ describe('POST /api/render: refusals', () => {
     expect(unknown.statusCode).toBe(503);
     expect(errorOf(unknown.body)).toMatchObject({ code: 'TOKEN_CHECK_UNAVAILABLE', retryable: true });
     expect(unknown.headers['retry-after']).toBe('10');
+  });
+
+  it('cancels token verification and logs no error when the client disconnects mid-flight', async () => {
+    let callSignal: AbortSignal | null = null;
+    const { server: app, lock, logs } = await start({
+      google: {
+        tokeninfo: (call) => {
+          callSignal = call.signal;
+          return untilAborted(call.signal);
+        },
+      },
+    });
+    const url = await listening(app);
+    const client = httpRequest(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...OWN },
+    });
+    client.on('error', () => undefined);
+    client.end(JSON.stringify({ source: { kind: 'demo', size: 'S' } }));
+
+    await expect.poll(() => callSignal).not.toBeNull();
+    client.destroy();
+
+    await expect.poll(() => callSignal?.aborted).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const errors = logs().filter(
+      (line) =>
+        line.includes('"severity":"ERROR"') ||
+        line.includes('"level":50') ||
+        line.includes('Unhandled route error'),
+    );
+    expect(errors).toEqual([]);
+    expect(lock.size).toBe(0);
   });
 
   it('429 RATE_LIMITED past ten renders a minute per token', async () => {

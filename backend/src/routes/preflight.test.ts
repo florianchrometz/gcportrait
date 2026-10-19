@@ -5,6 +5,8 @@
  * reaches the log (never the token, the email, the scope or the quota project). A missing or malformed token on
  * every route is demo-only.test.ts's route matrix; service-account mode off or unavailable is sa-mode.test.ts's.
  */
+import { request as httpRequest } from 'node:http';
+
 import type { FastifyInstance } from 'fastify';
 import { describe, expect, it } from 'vitest';
 
@@ -16,13 +18,14 @@ import {
   type FakeGoogleOptions,
 } from '../preflight/google.testing.js';
 import { PreflightResponseSchema } from '../preflight/schemas.js';
-import { startTestServer, type TestServerOptions } from '../server.testing.js';
+import { listenOnLoopback, startTestServer, type TestServerOptions } from '../server.testing.js';
 import {
   ACCOUNT_EMAIL,
   ACCOUNT_TOKEN,
   CALLER_EMAIL,
   CALLER_TOKEN,
   fakeAccount,
+  untilAborted,
 } from '../upstream/google.testing.js';
 
 interface Started {
@@ -167,5 +170,35 @@ describe('POST /api/preflight', () => {
     for (const secret of [CALLER_TOKEN, CALLER_EMAIL, 'demo-secret-scope', 'demo-secret-quota', 'ya29']) {
       expect(text, secret).not.toContain(secret);
     }
+  });
+
+  it('cancels the preflight and logs no error when the client disconnects mid-flight', async () => {
+    let callSignal: AbortSignal | null = null;
+    const { app, logs } = await start({
+      list: (call) => {
+        callSignal = call.signal;
+        return untilAborted(call.signal);
+      },
+    });
+    const port = await listenOnLoopback(app);
+    const client = httpRequest(`http://127.0.0.1:${String(port)}/api/preflight`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${CALLER_TOKEN}`,
+      },
+    });
+    client.on('error', () => undefined);
+    client.end(JSON.stringify({ scope: 'projects/demo-app-1', mode: 'user' }));
+
+    await expect.poll(() => callSignal).not.toBeNull();
+    client.destroy();
+
+    await expect.poll(() => callSignal?.aborted).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const text = logs();
+    expect(text).not.toContain('"severity":"ERROR"');
+    expect(text).not.toContain('"level":50');
+    expect(text).not.toContain('Unhandled route error');
   });
 });

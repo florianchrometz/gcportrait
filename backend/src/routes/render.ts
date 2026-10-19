@@ -57,6 +57,8 @@ import {
   authenticate,
   googleContextFor,
   invalidRequest,
+  isClientGoneError,
+  sendClientGone,
   SIGN_IN_AGAIN_MESSAGE,
   takeStreamSlot,
 } from '../upstream/route-support.js';
@@ -358,7 +360,16 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         const refused = refuseUnavailableMode(request, reply, source.mode, authority);
         if (refused !== null) return refused;
       } else {
-        const facts = await tokenFacts(googleContextFor(request, reply, authority.upstream), callerToken);
+        const factsContext = googleContextFor(request, reply, authority.upstream);
+        let facts;
+        try {
+          facts = await tokenFacts(factsContext, callerToken);
+        } catch (error) {
+          if (isClientGoneError(error, factsContext.signal)) {
+            return sendClientGone(reply);
+          }
+          throw error;
+        }
         if (facts.kind === 'invalid')
           return refuse({ status: 401, code: 'UNAUTHENTICATED', message: SIGN_IN_AGAIN_MESSAGE });
         if (facts.kind === 'unknown')
@@ -498,7 +509,7 @@ export async function registerRenderRoute(app: FastifyInstance, options: RenderR
         result = await unlessAborted(job.end(), signal);
       } catch (error) {
         job.stop();
-        if (life.signal.aborted) {
+        if (life.signal.aborted || isClientGoneError(error, life.signal)) {
           outcome = 'client-gone';
           return reply;
         }

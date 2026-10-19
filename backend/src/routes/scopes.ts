@@ -49,6 +49,8 @@ import {
   authenticate,
   googleContextFor,
   invalidRequest,
+  isClientGoneError,
+  sendClientGone,
   SIGN_IN_AGAIN_MESSAGE,
 } from '../upstream/route-support.js';
 import { SCOPE_COLLECTIONS } from '../upstream/scope.js';
@@ -287,9 +289,17 @@ export function registerScopeSearchRoute(app: FastifyInstance, options: ScopeSea
       const context = googleContextFor(request, reply, options.upstream);
       const pageSize = body.pageSize ?? DEFAULT_PAGE_SIZE;
 
-      const pages = await Promise.all(
-        kinds.map((kind) => searchKind(context, token, kind, terms, pageSize, pageTokens[kind])),
-      );
+      let pages;
+      try {
+        pages = await Promise.all(
+          kinds.map((kind) => searchKind(context, token, kind, terms, pageSize, pageTokens[kind])),
+        );
+      } catch (error) {
+        if (isClientGoneError(error, context.signal)) {
+          return sendClientGone(reply);
+        }
+        throw error;
+      }
       if (pages.some((page) => isUnauthenticated(page.outcome))) {
         return sendError(request, reply, { status: 401, message: SIGN_IN_AGAIN_MESSAGE });
       }

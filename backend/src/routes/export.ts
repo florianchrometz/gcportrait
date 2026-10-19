@@ -25,7 +25,13 @@ import { frameLine } from '../stream/frames.js';
 import { sendNdjson, watchResponse } from '../stream/ndjson.js';
 import type { StreamSlots } from '../stream/slots.js';
 import type { UpstreamClient } from '../upstream/request.js';
-import { authenticate, invalidRequest, takeStreamSlot } from '../upstream/route-support.js';
+import {
+  authenticate,
+  invalidRequest,
+  isClientGoneError,
+  sendClientGone,
+  takeStreamSlot,
+} from '../upstream/route-support.js';
 import { TokenRateLimiter } from '../upstream/token-limit.js';
 
 export const ExportReadRequestSchema = z.strictObject({
@@ -90,7 +96,9 @@ export function registerExportReadRoute(app: FastifyInstance, options: ExportRea
       plan = await planExportRead(location, readOptions, life.signal);
     } catch (error) {
       // The client left while the export was being looked up: there is no one to answer.
-      if (life.signal.aborted) return reply.code(499).send();
+      if (life.signal.aborted || isClientGoneError(error, life.signal)) {
+        return sendClientGone(reply);
+      }
       throw error;
     }
     if (!plan.ok) {

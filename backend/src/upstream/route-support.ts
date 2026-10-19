@@ -78,6 +78,40 @@ export function takeStreamSlot(
   return release;
 }
 
+/** The abort reason when the client closed the connection before the response ended. */
+export class ClientGoneError extends Error {
+  override readonly name = 'ClientGoneError';
+  constructor(message = 'The client went away.') {
+    super(message);
+  }
+}
+
+function isClientGone(target: unknown): boolean {
+  if (target instanceof ClientGoneError) return true;
+  if (
+    typeof target === 'object' &&
+    target !== null &&
+    'name' in target &&
+    (target as { readonly name?: unknown }).name === 'ClientGoneError'
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** Whether an error or an abort signal indicates that the client closed the connection early. */
+export function isClientGoneError(error: unknown, signal?: AbortSignal): boolean {
+  if (isClientGone(error)) return true;
+  if (signal?.aborted && isClientGone(signal.reason as unknown)) return true;
+  return false;
+}
+
+/** Ends a request whose client disconnected with 499 if not already sent. */
+export function sendClientGone(reply: FastifyReply): FastifyReply {
+  if (reply.sent) return reply;
+  return reply.code(499).send();
+}
+
 /**
  * The context of the Google calls made for one request. Its signal aborts when the client goes away before the
  * answer is sent, so no upstream call outlives the request that asked for it.
@@ -88,8 +122,11 @@ export function googleContextFor(
   client: UpstreamClient,
 ): GoogleCallContext {
   const controller = new AbortController();
+  if ((reply.raw.closed || reply.raw.destroyed) && !reply.raw.writableFinished) {
+    controller.abort(new ClientGoneError());
+  }
   reply.raw.once('close', () => {
-    if (!reply.raw.writableFinished) controller.abort(new Error('The client went away.'));
+    if (!reply.raw.writableFinished) controller.abort(new ClientGoneError());
   });
   return { client, signal: controller.signal, requestId: request.id, log: request.log };
 }

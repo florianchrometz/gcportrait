@@ -24,6 +24,7 @@ import { isApiPath, isSpaRoute, loadSpaBundle, pathnameOf, registerSpa, sendAsse
 import { PageBudget } from './stream/page-budget.js';
 import { StreamSlots } from './stream/slots.js';
 import { createUpstreamClient, type UpstreamOptions } from './upstream/request.js';
+import { isClientGoneError, sendClientGone } from './upstream/route-support.js';
 
 /**
  * The gcportrait backend (backend/AGENTS.md, Hardening): stateless, no database, no stored
@@ -201,6 +202,9 @@ export async function buildServer(
   });
 
   app.setErrorHandler(async (error: unknown, request, reply) => {
+    if (isClientGoneError(error) || ((reply.raw.closed || reply.raw.destroyed) && !reply.raw.writableFinished)) {
+      return sendClientGone(reply);
+    }
     const status = statusCodeOf(error);
     if (status >= 500) {
       request.log.error({ err: error }, 'request failed');
