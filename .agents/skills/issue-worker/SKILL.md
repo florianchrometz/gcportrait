@@ -1,6 +1,6 @@
 ---
 name: issue-worker
-description: Procedure for working GitHub issues on a feature branch — prioritizing issues by release milestone, re-evaluating issue accuracy against the current tree, posting a comment with findings, details and plan to solve it on the issue before starting work, checkout and worktree isolation, scope-specific verification gates, committing and pushing onto a feature branch, while leaving opening, reviewing and merging pull requests to the maintainer.
+description: Orchestrated procedure for working GitHub issues with subagents on a feature branch — coordinator triage by release milestone, conflict-free partitioning across the main checkout and .worktrees/ subagent lanes, re-evaluating issue accuracy, commenting findings, details and plan on each issue before starting work, scope verification gates, and integrating and pushing commits onto the feature branch while leaving pull requests to the maintainer.
 ---
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
@@ -9,7 +9,7 @@ description: Procedure for working GitHub issues on a feature branch — priorit
 The rules this handbook applies are in [AGENTS.md](../../../AGENTS.md) ("How to work a task", "Licence and
 dependencies", "Quality gates, testing and CI", "Documentation" and "Names that never appear") and the
 [contributor-workflow skill](../contributor-workflow/SKILL.md); this file is the step-by-step procedure for
-working one or more GitHub issues on a feature branch.
+orchestrating and working one or more GitHub issues on a feature branch using subagents.
 
 ## 1. Milestone priority, branch pushing and pull request discipline
 
@@ -29,42 +29,67 @@ working one or more GitHub issues on a feature branch.
   requests, pushing commits to the feature branch without opening a pull request makes every commit visible
   online without triggering CI on intermediate pushes until the maintainer opens the pull request.
 
-## 2. Re-evaluate the issue and comment findings, details and plan before touching code
+## 2. Coordinator orchestration and subagent delegation
+
+When working one or more issues, the top-level assistant acts as the **coordinator** and delegates each
+self-contained issue to a dedicated **worker subagent**:
+
+1. **Triage and clarify upfront**:
+   - Fetch open issues (`gh issue list --state open --json number,title,milestone,labels,body`) and sort them
+     by milestone version.
+   - Read each target issue (`gh issue view <N> --comments`). If an issue has product, UX or scope ambiguity
+     that requires maintainer input, ask the maintainer before spawning worker subagents.
+2. **Partition issues into conflict-free lanes**:
+   - Inspect the files and packages each issue will touch so no two concurrent subagents edit overlapping
+     files.
+   - **Main-checkout lane (serial, at most one subagent at a time)**: issues that change the frontend app
+     bundle (`frontend/src/`, `packages/*/src/` imported by the app, or `scripts/media*.mjs`), because
+     `pnpm media` records the built frontend bundle hash in `docs/media/manifest.json`.
+   - **Isolated worktree lanes (parallel, `.worktrees/wt-<N>`)**: issues that touch disjoint non-bundle paths
+     (`backend/`, `infra/`, `website/`, `e2e/`, `.github/`, `scripts/` outside media, `docs/`, catalog
+     tooling, or `AGENTS.md`). Create a dedicated worktree per parallel subagent from the feature branch
+     (`git worktree add -b work/issue-<N> .worktrees/wt-<N> <feature-branch>`).
+   - Keep every checkout and worktree free of untracked scratch files: `scripts/lib/repo-files.mjs` scans all
+     non-ignored files in the working tree during `pnpm provenance` and repository tests.
+3. **Spawn one worker subagent per issue**:
+   - Pass each subagent its assigned issue number `<N>`, assigned working directory (main checkout or
+     `.worktrees/wt-<N>`), target branch, touched folders, required verification gates, and any maintainer
+     clarifications.
+   - Wait for active subagents to complete without polling loops.
+4. **Integrate, clean up worktrees and push**:
+   - As each worktree subagent finishes, fast-forward or cherry-pick its verified commit onto the milestone
+     feature branch (for example `work/v1.0.1`), remove the temporary worktree and branch
+     (`git worktree remove .worktrees/wt-<N> && git branch -d work/issue-<N>`), and run `pnpm check` if
+     multiple parallel commits touched shared docs or tests.
+   - Push the updated milestone feature branch to `origin` (`git push -u origin <feature-branch>`).
+
+## 3. Worker subagent step 1: re-evaluate the issue and comment before touching code
+
+Each worker subagent (or single-issue worker) must complete these steps before editing any file:
 
 1. Read [AGENTS.md](../../../AGENTS.md), the `AGENTS.md` of every top-level folder the issue touches, the
    [contributor-workflow skill](../contributor-workflow/SKILL.md), and the domain skill for that area.
 2. Read the full issue (`gh issue view <N> --comments`) and inspect every file and symbol it names in the
-   current checkout.
+   assigned checkout or worktree.
 3. Verify whether the issue description still matches the codebase:
    - **Already resolved**: if the behaviour is already fixed on the branch, make no redundant edits and report
      the commit or file that resolved it on the issue.
    - **Partially resolved or shifted**: adapt the plan to what genuinely remains.
    - **Multi-part issue**: complete one coherent, self-contained slice, commit with `Part of #<N>; <what
      remains>.`, and note what remains on the issue.
-4. **Comment on the issue before starting implementation**: prior to editing any files, post a structured
-   comment on the GitHub issue (`gh issue comment <N> --body-file -`) outlining:
+4. **Comment on the issue before starting work**: prior to editing any files, post a structured comment on the
+   GitHub issue (`gh issue comment <N> --body-file -`) outlining:
    - **Findings**: what inspecting the current tree showed (exact files, symbols and current behaviour, and
      whether any part of the issue has already shifted or been resolved).
    - **Details**: root cause or design context, affected packages/surfaces, and the repository rules or
      constraints that apply.
-   - **Plan**: the step-by-step implementation and verification plan (files to change, tests to write or
-     update first, and verification gates to run).
+   - **Plan**: the step-by-step plan to solve and verify the issue (files to change, tests to write or update
+     first, and verification gates to run).
 
-## 3. Checkout and worktree isolation
-
-- **Main checkout** (`work/<branch>`): use the main checkout when a task changes the app bundle
-  (`frontend/src/`, `packages/*/src/` imported by the app, or `scripts/media*.mjs`), because `pnpm media`
-  records the built frontend bundle hash in `docs/media/manifest.json`.
-- **Isolated worktree** (`.worktrees/wt-<N>`): use a clean git worktree when running parallel tasks
-  that touch non-bundle paths (`backend/`, `infra/`, `website/`, `e2e/`, `.github/`, `scripts/` outside media,
-  `docs/`, catalog tooling, or `AGENTS.md`).
-- Keep every checkout and worktree free of untracked scratch files: `scripts/lib/repo-files.mjs` scans all
-  non-ignored files in the working tree during `pnpm provenance` and repository tests.
-
-## 4. Implementation and verification gate
+## 4. Worker subagent step 2: test-first changes and verification gate
 
 1. **Tests first**: add or update the failing unit, property or integration test before changing
-   implementation code ([AGENTS.md](../../../AGENTS.md), "Quality gates, testing and CI").
+   application or package code ([AGENTS.md](../../../AGENTS.md), "Quality gates, testing and CI").
 2. **File and code hygiene**:
    - Start every new text source file with its `Apache-2.0` SPDX comment header
      ([AGENTS.md](../../../AGENTS.md), "Licence and dependencies").
@@ -82,7 +107,7 @@ working one or more GitHub issues on a feature branch.
    - **App bundle or media scripts changed**: `CI=true pnpm media`, `pnpm build && pnpm size`,
      `CI=true pnpm e2e --retries=0`, and `node scripts/media.mjs --check && node scripts/exports.mjs --check`.
 
-## 5. Commit, push and reporting
+## 5. Worker subagent step 3: commit, push and report back
 
 - Stage only the files belonging to the issue (`git status` must be clean after committing).
 - Format the commit message so its subject can go straight into release notes ([contributor-workflow
@@ -90,5 +115,8 @@ working one or more GitHub issues on a feature branch.
   - Subject: `Area: imperative summary (#<N>)`
   - Body: what changed, why, and the verification commands run.
   - Trailer: `Closes #<N>.` (or `Part of #<N>; <what remains>.`).
-- Push the feature branch to `origin` (`git push -u origin <branch>`) so the commits are visible online, and
-  leave opening, reviewing and merging the pull request to the maintainer.
+- Push the feature branch to `origin` (`git push -u origin <branch>`) once integrated onto the target feature
+  branch so the commits are visible online, while leaving opening, reviewing and merging the pull request to
+  the maintainer.
+- Return a concise summary to the coordinator: issue number, outcome, commit SHA, files changed, and
+  verification results.
