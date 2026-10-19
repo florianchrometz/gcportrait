@@ -1,7 +1,7 @@
 {
-  "date": "2026-10-09",
+  "date": "2026-10-19",
   "source": "https://docs.cloud.google.com/asset-inventory/docs/supported-asset-types",
-  "pageUpdated": "2026-10-07",
+  "pageUpdated": "2026-10-13",
   "description": "Product sections of the official supported-asset-types page, as extracted by scripts/catalog-fetch-official.mjs; the .txt file next to this one is the identifier list.",
   "products": [
     {
@@ -1749,6 +1749,24 @@
       ]
     },
     {
+      "product": "Fault Injection Testing",
+      "section": "resource",
+      "types": [
+        {
+          "type": "faulttesting.googleapis.com/Experiment",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.experiments"
+        },
+        {
+          "type": "faulttesting.googleapis.com/ExperimentTemplate",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.experimentTemplates"
+        },
+        {
+          "type": "faulttesting.googleapis.com/Validation",
+          "reference": "https://docs.cloud.google.com/fault-injection-testing/reference/rest/v1alpha/projects.locations.validations"
+        }
+      ]
+    },
+    {
       "product": "Filestore",
       "section": "resource",
       "types": [
@@ -1827,6 +1845,18 @@
         {
           "type": "firebasedataconnect.googleapis.com/Service",
           "reference": "https://firebase.google.com/docs/reference/data-connect/rest/v1beta/projects.locations.services"
+        }
+      ]
+    },
+    {
+      "product": "Firebase Storage",
+      "section": "resource",
+      "types": [
+        {
+          "type": "firebasestorage.googleapis.com/Bucket"
+        },
+        {
+          "type": "firebasestorage.googleapis.com/DefaultBucket"
         }
       ]
     },
@@ -2699,6 +2729,10 @@
       "section": "resource",
       "types": [
         {
+          "type": "networkservices.googleapis.com/AgentGateway",
+          "reference": "https://docs.cloud.google.com/service-mesh/docs/reference/network-services/rest/v1/projects.locations.agentGateways"
+        },
+        {
           "type": "networkservices.googleapis.com/AuthzExtension",
           "reference": "https://docs.cloud.google.com/service-extensions/docs/reference/rest/v1/projects.locations.authzExtensions"
         },
@@ -2837,6 +2871,9 @@
       "product": "Privileged Access Manager",
       "section": "resource",
       "types": [
+        {
+          "type": "privilegedaccessmanager.googleapis.com/Entitlement"
+        },
         {
           "type": "privilegedaccessmanager.googleapis.com/Grant"
         }
