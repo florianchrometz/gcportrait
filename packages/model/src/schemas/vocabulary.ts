@@ -10,7 +10,7 @@
 import type { DemoSize, FocusKind, SnapshotRef } from './view-spec.js';
 import type { DetailLevel, LensId } from './lens.js';
 import type { RelationKind } from './relation.js';
-import { ULID_PATTERN } from './patterns.js';
+import { RFC3339_PATTERN, ULID_PATTERN } from './patterns.js';
 
 export const RENDER_DEFAULT_SCALE = 2;
 export const RENDER_MAX_SCALE = 3;
@@ -139,10 +139,17 @@ export function addDays(day: string, days: number): string {
   return utcDayOf(dayStart(day) + days * DAY_MS);
 }
 
-/** The UTC day a read time (RFC 3339) falls on; null when it is not a time. */
+/** Whether `value` is a valid RFC 3339 timestamp representing a real calendar instant. */
+export function isRfc3339Timestamp(value: unknown): value is string {
+  if (typeof value !== 'string' || !RFC3339_PATTERN.test(value)) return false;
+  if (!isDay(value.slice(0, 10))) return false;
+  return Number.isFinite(Date.parse(value));
+}
+
+/** The UTC day a read time (RFC 3339) falls on; null when it is not a valid RFC 3339 time. */
 export function dayOfReadTime(readTime: string): string | null {
-  const ms = Date.parse(readTime);
-  return Number.isFinite(ms) ? utcDayOf(ms) : null;
+  if (!isRfc3339Timestamp(readTime)) return null;
+  return utcDayOf(Date.parse(readTime));
 }
 
 function member<T extends string>(list: readonly T[], value: unknown): value is T {

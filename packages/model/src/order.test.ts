@@ -101,6 +101,20 @@ describe('compareTimestamps', () => {
     expect(compareTimestamps('b', 'a')).toBe(1);
     expect(compareTimestamps('b', 'b')).toBe(0);
   });
+
+  it('falls back to text order for out-of-range calendar dates and components', () => {
+    // 2026-02-30 does not exist; Date.UTC would overflow it to 2026-03-02
+    expect(compareTimestamps('2026-02-30T00:00:00Z', '2026-03-02T00:00:00Z')).toBe(1);
+    expect(compareTimestamps('2026-03-02T00:00:00Z', '2026-02-30T00:00:00Z')).toBe(-1);
+    expect(compareTimestamps('2026-02-30T00:00:00Z', '2026-02-31T00:00:00Z')).toBe(-1);
+    expect(compareTimestamps('2026-13-01T00:00:00Z', '2026-12-31T23:59:59Z')).toBe(1);
+    expect(compareTimestamps('2026-04-31T00:00:00Z', '2026-05-01T00:00:00Z')).toBe(1);
+    expect(compareTimestamps('2026-01-01T24:00:00Z', '2026-01-02T00:00:00Z')).toBe(1);
+    expect(compareTimestamps('2026-01-01T00:60:00Z', '2026-01-01T01:00:00Z')).toBe(1);
+    expect(compareTimestamps('2026-01-01T00:00:61Z', '2026-01-01T00:01:00Z')).toBe(1);
+    expect(compareTimestamps('2026-01-01T00:00:00+24:00', '2026-01-01T00:00:00Z')).toBe(1);
+    expect(compareTimestamps('2026-01-01T00:00:00+00:60', '2026-01-01T00:00:00Z')).toBe(1);
+  });
 });
 
 describe('compareSiblings', () => {

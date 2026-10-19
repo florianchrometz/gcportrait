@@ -342,6 +342,7 @@ export {
   isFocusKind,
   isLensId,
   isRelationKind,
+  isRfc3339Timestamp,
   isScopeKind,
   isSnapshotRef,
   scopePathOf,

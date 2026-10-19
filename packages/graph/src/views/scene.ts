@@ -209,11 +209,24 @@ export interface PreparedView {
 export function preparedViewKey(spec: ViewSpec, env: SceneEnv): string {
   const filters: Partial<ViewFilters> = { ...spec.filters };
   delete filters.depth;
+  const canonicalFocus =
+    spec.focus === undefined
+      ? null
+      : {
+          kind: spec.focus.kind,
+          params: Object.fromEntries(
+            Object.entries(spec.focus.params)
+              .filter(([, v]) => v !== undefined)
+              .sort(([a], [b]) => compareStrings(a, b)),
+          ),
+        };
   return JSON.stringify([
     spec.lens,
-    spec.focus ?? null,
+    canonicalFocus,
     spec.root ?? null,
-    Object.entries(filters).sort(([a], [b]) => compareStrings(a, b)),
+    Object.entries(filters)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => compareStrings(a, b)),
     env.rootLabel ?? null,
     env.showRegions ?? null,
   ]);

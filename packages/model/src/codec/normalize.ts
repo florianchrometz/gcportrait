@@ -16,7 +16,7 @@ import {
   PROJECT_REF_PATTERN,
   WELL_FORMED_TEXT_PATTERN,
 } from '../schemas/patterns.js';
-import { isDetailLevel, isFocusKind, isLensId, isSnapshotRef } from '../schemas/vocabulary.js';
+import { isDay, isDetailLevel, isFocusKind, isLensId, isSnapshotRef } from '../schemas/vocabulary.js';
 
 /** The flips list keeps at most this many entries, newest last (skill gcp-diagram-layout §6). */
 export const VIEW_SPEC_MAX_FLIPS = 48;
@@ -74,24 +74,6 @@ export function isDepth(value: unknown): value is number {
   return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= VIEW_SPEC_MAX_DEPTH;
 }
 
-function isLeapYear(year: number): boolean {
-  return year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
-}
-
-const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] as const;
-const CALENDAR_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
-
-/** A calendar date `YYYY-MM-DD` that exists (`2026-02-29` does not). */
-function isCalendarDate(value: string): boolean {
-  const parts = CALENDAR_DATE.exec(value);
-  if (parts === null) return false;
-  const year = Number(parts[1]);
-  const month = Number(parts[2]);
-  const day = Number(parts[3]);
-  const days = month === 2 && isLeapYear(year) ? 29 : (DAYS_IN_MONTH[month - 1] ?? 0);
-  return day >= 1 && day <= days;
-}
-
 /** An extra tick's time of day: `THH:MM:SSZ`, to the second, in UTC. */
 const UTC_SECOND = /^T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\dZ$/;
 
@@ -101,8 +83,8 @@ const UTC_SECOND = /^T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\dZ$/;
  */
 export function isTick(value: unknown): value is string {
   if (typeof value !== 'string') return false;
-  if (value.length === 10) return isCalendarDate(value);
-  return value.length === 20 && isCalendarDate(value.slice(0, 10)) && UTC_SECOND.test(value.slice(10));
+  if (value.length === 10) return isDay(value);
+  return value.length === 20 && isDay(value.slice(0, 10)) && UTC_SECOND.test(value.slice(10));
 }
 
 function isBoolean(value: unknown): value is boolean {
