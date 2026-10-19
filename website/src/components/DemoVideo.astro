@@ -211,6 +211,13 @@ const { video, eager = false } = Astro.props;
     }
   }
 
+  function setState(demo: Demo, state: 'paused'): void {
+    if (state === 'paused') {
+      demo.choice = false;
+      update(demo);
+    }
+  }
+
   function playVideo(demo: Demo): void {
     const { video } = demo;
     const wanted = source(demo, 'video');
@@ -229,13 +236,11 @@ const { video, eager = false } = Astro.props;
     video.play().catch((error: unknown) => {
       const name = error instanceof DOMException ? error.name : '';
       if (name === 'NotSupportedError') fallBack(demo);
-      else if (name === 'NotAllowedError') {
-        // The browser does not play by itself here: wait for the visitor's press.
-        demo.choice = false;
+      else if (name === 'AbortError') return;
+      else if (name === 'NotAllowedError' || video.paused) {
         release(demo);
-        update(demo);
+        setState(demo, 'paused');
       }
-      // An AbortError means a pause or a new source came first; that call has done what is needed.
     });
   }
 
