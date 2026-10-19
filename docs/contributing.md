@@ -429,8 +429,13 @@ and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass
    `AGENTS.md` that holds it in the same pull request. Load the skills its area needs from `.agents/skills/`
    ([AGENTS.md](../AGENTS.md), "Skills"), and read the `AGENTS.md` of every top-level folder you change and
    the README of every package you change.
-2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser` or
-   `412-gutter-lanes`.
+2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser`,
+   `412-gutter-lanes`, or `work/<N>` when working an issue. The `main` branch is protected by ruleset
+   `#25366182`: direct pushes are blocked, and every change must merge via a pull request. When working
+   tasks in parallel, use isolated git worktrees (for example under `.claude/worktrees/wt-<N>`) to avoid
+   cross-task conflicts. Keep the working tree clean: repository tooling (`scripts/lib/repo-files.mjs` via
+   `listRepoFiles`) scans both tracked and untracked files not matched by repository `.gitignore` files
+   (`git ls-files --cached --others`), so unignored scratch files will be checked by `pnpm provenance`.
 3. **Tests first** for `packages/*`; fixtures first for catalog work; an e2e test for anything a user does.
 4. **Docs in the same pull request:** the package README if behaviour changed, the user guide under `docs/` if
    users will notice it (the guides are listed in [README.md](README.md#user-guides); a guide says what to do,
@@ -443,6 +448,20 @@ and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass
    document names a version of resvg.
 5. **Run `pnpm check`**, and for app changes also `pnpm build`, `pnpm size` and `pnpm e2e`.
 6. **Open the pull request** (section 7).
+
+### Topological regeneration cascade
+
+When upstream modules or authoring assets change, regenerate downstream artifacts in topological order:
+
+1. `pnpm --filter @gcportrait/catalog compile` (or `pnpm catalog:build`)
+2. `pnpm --filter @gcportrait/icons build`
+3. `pnpm --filter @gcportrait/layout metrics`
+4. `pnpm --filter @gcportrait/layout goldens`
+5. `pnpm --filter @gcportrait/render goldens`
+6. `CI=true pnpm media` (highlight: changes to `frontend/` or bundled workspace packages change
+   `inputs.bundle` in `docs/media/manifest.json`, verified by `pnpm media --check`)
+7. `node scripts/exports.mjs` (or `pnpm exports`)
+8. `pnpm --filter @gcportrait/e2e test --update-snapshots`
 
 ### Release notes
 
@@ -553,13 +572,20 @@ To take it down afterwards, if wanted: `gh release delete v1.0.0-rc.1 --yes --cl
 and its tag on GitHub (`git tag -d v1.0.0-rc.1` the local one), and the image version `1.0.0-rc.1` is deleted
 on the package's page on GitHub, from its list of versions.
 
-Then, per release: read `git log` since the last tag (`git log --oneline vX.Y.0..main`), choose the bump that
-matches it, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs`: one fixed version in the root's and
-every workspace package's `package.json`), commit, and tag `vX.Y.Z` on `main`. Optionally write the version's
-`## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md) before tagging, for the releases whose commits alone say
-too little; otherwise the notes list the commits since the previous release tag. Once the release is out,
-`curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version vX.Y.Z --project YOUR_PROJECT
---dry-run` downloads and checks its deploy scripts and prints what they would deploy.
+Then, per release: follow the two-step sequence under branch protection (ruleset `#25366182`):
+
+1. **Version bump PR**: read `git log` since the last tag (`git log --oneline vX.Y.0..main`), choose the
+   bump that matches it, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs`: one fixed version in
+   the root's and every workspace package's `package.json`) on a topic branch, and optionally write the
+   version's `## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md). Open a pull request against `main` and
+   rebase-merge it once checks pass.
+2. **Push the tag**: on the updated `main` branch (`git checkout main && git pull --ff-only origin main`),
+   create and push the release tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. Release tooling
+   (`scripts/release-notes.mjs` and `scripts/release-image.mjs`) guards consistency, verifying that `tag`
+   matches `package.json#version`.
+
+Once the release is out, `curl -fsSL https://gcportrait.app/install.sh | bash -s -- --version vX.Y.Z
+--project YOUR_PROJECT --dry-run` downloads and checks its deploy scripts and prints what they would deploy.
 
 **The first release, 1.0.0, is already versioned**: every `@gcportrait/*` package is at 1.0.0 and
 [CHANGELOG.md](../CHANGELOG.md) holds its section, so its tag needs no versioning step and its notes are that

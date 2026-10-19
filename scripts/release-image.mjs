@@ -28,7 +28,7 @@
  * runner's own Node, without installing one.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -49,8 +49,32 @@ export const DOCKERFILE_KEYS = Object.freeze([
 /** The annotation levels: every platform manifest and the index. */
 const LEVELS = Object.freeze(['manifest', 'index']);
 
-class UsageError extends Error {}
-class ReleaseError extends Error {}
+export class UsageError extends Error {}
+export class ReleaseError extends Error {}
+
+/**
+ * Reads the "version" field from package.json under root, or undefined if absent or unreadable.
+ * @param {string} root
+ * @returns {string | undefined}
+ */
+export function packageVersionOf(root) {
+  const file = path.join(root, 'package.json');
+  if (!existsSync(file)) return undefined;
+  try {
+    const parsed = /** @type {unknown} */ (JSON.parse(readFileSync(file, 'utf8')));
+    if (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'version' in parsed &&
+      typeof parsed.version === 'string'
+    ) {
+      return parsed.version;
+    }
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Negative, zero or positive as version `a` is lower than, equal to or higher than `b`.
@@ -111,6 +135,7 @@ export function dockerfileLabels(dockerfile) {
  * @property {string} created the creation time, ISO 8601
  * @property {readonly string[]} releaseTags the repository's `v*` tags
  * @property {string} dockerfile the text of infra/Dockerfile
+ * @property {string | undefined} [packageVersion] optional package.json version
  */
 
 /**
@@ -128,10 +153,15 @@ export function dockerfileLabels(dockerfile) {
  * @returns {ImageMeta}
  */
 export function imageMeta(input) {
-  const { event, tag, sha, repository, serverUrl, created, releaseTags, dockerfile } = input;
+  const { event, tag, sha, repository, serverUrl, created, releaseTags, dockerfile, packageVersion } = input;
   const owner = repository.split('/')[0] ?? '';
   if (!/^[^/\s]+\/[^/\s]+$/.test(repository))
     throw new UsageError(`--repository ${repository}: not OWNER/NAME`);
+  if (packageVersion !== undefined && tag.startsWith('v')) {
+    if (tag.slice(1) !== packageVersion) {
+      throw new ReleaseError(`release tag ${tag} does not match package.json version ${packageVersion}`);
+    }
+  }
   const image = `ghcr.io/${owner.toLowerCase()}/gcportrait`;
   /** @type {string} */
   let appVersion;
@@ -228,6 +258,7 @@ export function main(argv) {
       'server-url': { type: 'string', default: 'https://github.com' },
       created: { type: 'string' },
       root: { type: 'string' },
+      'package-version': { type: 'string' },
     },
     strict: true,
     allowPositionals: false,
@@ -240,6 +271,7 @@ export function main(argv) {
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean);
+  const packageVersion = values['package-version'] ?? packageVersionOf(root);
   return githubOutput(
     imageMeta({
       event: values.event ?? '',
@@ -250,6 +282,7 @@ export function main(argv) {
       created: values.created ?? new Date().toISOString(),
       releaseTags,
       dockerfile: readFileSync(path.join(root, 'infra', 'Dockerfile'), 'utf8'),
+      packageVersion,
     }),
   );
 }
