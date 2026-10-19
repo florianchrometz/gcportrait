@@ -264,6 +264,7 @@ docs/contributing.md §9.
 ## Skills
 
 Load `.agents/skills/NAME/SKILL.md`: **contributor-workflow** for every task, review or release;
+**issue-worker** for milestone-prioritised GitHub issues committed and pushed to a feature branch;
 **gcp-diagram-style** for visuals, exports, accessibility or render review; **gcp-diagram-layout** for
 containment, layout, routing, disclosure or performance; **gcp-asset-catalog** for types, relations, lenses,
 icons, console links or coverage; **cai-ingestion** for CAI, parsing, permissions, quota, timeline or demos.

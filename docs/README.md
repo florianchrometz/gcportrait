@@ -51,8 +51,8 @@ the author" section from [author.md](author.md).
 - [AGENTS.md](../AGENTS.md): the rules of the project, the repository map, the commands and how to work a
   task, for humans and AI assistants alike; a top-level folder with rules of its own holds them in an
   `AGENTS.md` of its own, which the root names.
-- [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion and contributor-workflow
-  skills, the handbooks that apply AGENTS.md's rules, usable as checklists by reviewers too.
+- [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion, contributor-workflow and
+  issue-worker skills, the handbooks that apply AGENTS.md's rules, usable as checklists by reviewers too.
 - [brand/](../brand/README.md): `icon.svg`, the one source of gcportrait's mark (the favicons and the
   website's logo).
 - Each workspace package's `README.md` (`frontend/`, `backend/`, `e2e/`, `packages/*/`): its scripts,
