@@ -603,7 +603,33 @@ describe.skipIf(!BASH_AVAILABLE)(
         const noValue = install(['--project', 'example-project', '--dir']);
         expect(noValue.status).toBe(1);
         expect(noValue.out).toContain('--dir needs a value');
-        for (const refused of [noProject, build, noValue]) expect(refused.web).toEqual([]);
+
+        const projectNoValue = install(['--project']);
+        expect(projectNoValue.status).toBe(1);
+        expect(projectNoValue.out).toContain('--project needs a value');
+
+        const projectFlagValue = install(['--project', '--dry-run']);
+        expect(projectFlagValue.status).toBe(1);
+        expect(projectFlagValue.out).toContain('--project needs a value');
+
+        const imageNoValue = install(['--project', 'example-project', '--image']);
+        expect(imageNoValue.status).toBe(1);
+        expect(imageNoValue.out).toContain('--image needs a value');
+
+        const imageFlagValue = install(['--project', 'example-project', '--image', '--dry-run']);
+        expect(imageFlagValue.status).toBe(1);
+        expect(imageFlagValue.out).toContain('--image needs a value');
+
+        for (const refused of [
+          noProject,
+          build,
+          noValue,
+          projectNoValue,
+          projectFlagValue,
+          imageNoValue,
+          imageFlagValue,
+        ])
+          expect(refused.web).toEqual([]);
 
         const help = install(['--help']);
         expect(help.status).toBe(0);
