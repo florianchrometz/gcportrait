@@ -59,7 +59,7 @@ refuse() {
   printf '%serror:%s %s\n' "$RED" "$RESET" "$*" >&2
   exit 1
 }
-need_value() { [ "$#" -ge 2 ] && [ -n "$2" ] || refuse "$1 needs a value (see --help)"; }
+need_value() { [[ $# -ge 2 && -n "${2:-}" && "${2:-}" != --* ]] || refuse "$1 needs a value (see --help)"; }
 
 # The download directory: removed when the installer exits, and just before deploy.sh takes over.
 WORK=""
@@ -126,11 +126,11 @@ main() {
       --build)
         refuse "--build builds the image from a clone of the source, which the installer does not download: git clone $GITHUB_URL.git, then infra/deploy.sh --project YOUR_PROJECT --build (docs/contributing.md). Without --build, the installer deploys the release's own image."
         ;;
-      --image) image_given=1; deploy_args+=("$1"); shift ;;
-      --project)
-        if [ "$#" -ge 2 ] && [ -n "$2" ]; then project_given=1; fi
-        deploy_args+=("$1")
-        shift
+      --image | --project)
+        need_value "$@"
+        if [ "$1" = --image ]; then image_given=1; else project_given=1; fi
+        deploy_args+=("$1" "$2")
+        shift 2
         ;;
       *) deploy_args+=("$1"); shift ;;
     esac

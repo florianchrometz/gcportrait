@@ -10,6 +10,7 @@
  * deploy scripts (infra-install.test.ts); `pnpm test:infra` runs all five. The non-affiliation wording in the labels,
  * --help and the tutorial: non-affiliation-copies.test.ts.
  */
+import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
@@ -857,3 +858,38 @@ describe.skipIf(!BASH_AVAILABLE)(
     });
   },
 );
+
+describe.skipIf(!BASH_AVAILABLE)('install.sh argument parsing', () => {
+  function runInstall(args: readonly string[]) {
+    return spawnSync('bash', [path.join(REPO, 'infra/install.sh'), ...args], {
+      encoding: 'utf8',
+      env: { LC_ALL: 'C', PATH: process.env.PATH },
+    });
+  }
+
+  it('refuses --project without a value or followed by another flag before any network call', () => {
+    const missing = runInstall(['--project']);
+    expect(missing.status).toBe(1);
+    expect(missing.stderr).toContain('error: --project needs a value (see --help)');
+
+    const flagValue = runInstall(['--project', '--dry-run']);
+    expect(flagValue.status).toBe(1);
+    expect(flagValue.stderr).toContain('error: --project needs a value (see --help)');
+  });
+
+  it('refuses --image without a value or followed by another flag before any network call', () => {
+    const missing = runInstall(['--project', 'my-proj', '--image']);
+    expect(missing.status).toBe(1);
+    expect(missing.stderr).toContain('error: --image needs a value (see --help)');
+
+    const flagValue = runInstall(['--project', 'my-proj', '--image', '--dry-run']);
+    expect(flagValue.status).toBe(1);
+    expect(flagValue.stderr).toContain('error: --image needs a value (see --help)');
+  });
+
+  it('accepts valid --project, --image, and --dry-run flags with --help', () => {
+    const help = runInstall(['--project', 'my-proj', '--image', 'my-img', '--dry-run', '--help']);
+    expect(help.status).toBe(0);
+    expect(help.stdout).toContain('gcportrait install.sh');
+  });
+});
