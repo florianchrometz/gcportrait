@@ -15,7 +15,7 @@ export type DetailsState = AnswerState<NodeDetails | null>;
 /** `day`: the timeline day drawn (absent: the snapshot's own day). */
 export function useNodeDetails(
   snapshot: SnapshotRef,
-  day: string | undefined,
+  day: string | null | undefined,
   id: string | null,
 ): DetailsState {
   const key = id === null || snapshot === '' ? null : `${snapshot}\u0000${day ?? ''}\u0000${id}`;

@@ -3,6 +3,8 @@
 export { AppStateProvider } from './AppStateProvider';
 export {
   selectDrawnDay,
+  selectDrawnReadTime,
+  selectLoadedSnapshot,
   selectScope,
   selectSceneKey,
   useAppState,
