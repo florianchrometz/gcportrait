@@ -19,7 +19,7 @@
     "build": "pnpm -r --if-present run build",
     "build:app": "pnpm -r --if-present --filter \"!@gcportrait/website\" run build",
     "prelint": "pnpm run catalog:build --quiet",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js . --max-warnings=0",
     "pretypecheck": "pnpm run catalog:build --quiet",
     "typecheck": "tsc -b && pnpm --silent --filter @gcportrait/website run typecheck:astro",
     "pretest": "pnpm run catalog:build --quiet",

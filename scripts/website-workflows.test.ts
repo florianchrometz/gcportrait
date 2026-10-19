@@ -4,6 +4,9 @@
  * pages.yml (a push to main) and release.yml (a tag), so a second copy cannot drift
  * from it; a pull request runs CI's `website` job alone (pr.yml), and pages.yml does not repeat that gate
  * there (docs/contributing.md, "Continuous integration").
+ *
+ * Also checks the shared workflow setup action (.github/actions/setup/action.yml) and root package.json
+ * lint script heap ceiling (--max-old-space-size=4096).
  */
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -57,6 +60,23 @@ describe('the website workflows', () => {
   it('accurately describes the pr.yml website job in website.yml comments', () => {
     expect(build).toContain(
       "runs CI's\n# `website` job (pr.yml), which builds and checks the site and static demo without deploying.",
+    );
+  });
+});
+
+describe('the Node heap ceiling for linting and workflows', () => {
+  it('configures the root package.json lint script to run with --max-old-space-size=4096', () => {
+    const pkg = JSON.parse(read('package.json')) as { scripts?: Record<string, string> };
+    expect(pkg.scripts?.lint).toBe(
+      'node --max-old-space-size=4096 ./node_modules/eslint/bin/eslint.js . --max-warnings=0',
+    );
+  });
+
+  it('exports NODE_OPTIONS=--max-old-space-size=4096 in the shared setup action', () => {
+    const setup = read('.github/actions/setup/action.yml');
+    expect(setup).toContain('NODE_OPTIONS=--max-old-space-size=4096');
+    expect(setup).toMatch(
+      /run:\s+echo\s+["']NODE_OPTIONS=--max-old-space-size=4096["']\s+>>\s+["']\$GITHUB_ENV["']/,
     );
   });
 });
