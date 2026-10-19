@@ -387,9 +387,9 @@ visitors' IP addresses). gcportrait offers two ways, for each page on its own (d
   `--privacy-url` (`LEGAL_IMPRESSUM_URL`, `LEGAL_PRIVACY_URL`). Each must be an `https://` URL without a user
   name or password, at most 2048 characters; deploy.sh checks that as the backend does. The backend reports
   them in `/api/config`, as `legal.impressumUrl` and `legal.privacyUrl` (null when unset), and the app's
-  footer links them as "Impressum · Privacy" (each in the same tab, marked as a link to another site; the
-  Connect page of a demo-only instance links the privacy notice too, and `/impressum` and `/privacy` lead
-  there).
+  footer links them as "Impressum · Privacy" (each in a new tab with `rel="noopener"`, marked as a link to
+  another site so the in-memory session is preserved; the Connect page of a demo-only instance links the
+  privacy notice too, and `/impressum` and `/privacy` lead there).
 - **Serve texts** you keep outside the repository, with `--legal-dir`: the instance shows them at `/impressum`
   and `/privacy`, linked as "Impressum · Privacy" in the footer of every page, next to the non-affiliation
   notice and the source link (below).

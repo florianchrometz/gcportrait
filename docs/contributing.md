@@ -148,7 +148,7 @@ A pull request runs one workflow, **CI** (`.github/workflows/pr.yml`); a push to
 **Website** (`.github/workflows/pages.yml`). CI's jobs run side by side; each one installs the dependencies
 itself from the pnpm store cache, which `pnpm-lock.yaml` keys, so a run takes as long as its slowest job. The
 site's build is one definition, `.github/workflows/website.yml`, which `pages.yml` calls on a push to `main`
-and on its daily run, and `release.yml` for a tag: it builds the demo and the site and checks them, warns
+(and workflow dispatch), and `release.yml` for a tag: it builds the demo and the site and checks them, warns
 about stale `docs/media/`, and `pages.yml` deploys what it built once the maintainer has switched deployment
 on ([website.md](website.md)). A pull request's site check is CI's `website` job, which builds without the
 demo and deploys nothing, so `pages.yml` does not run there: a second copy of the build drifts from the first

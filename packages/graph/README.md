@@ -52,7 +52,7 @@ report.focus; // { status: 'applied', … } or { status: 'error', error: { code,
 | `buildScene(graph, viewSpec, catalog, env)` | `Scene` (`SceneSchema` in the model): what `packages/layout` lays out |
 | `buildSceneWithReport(graph, viewSpec, catalog, env)` | `SceneBuild` (`{ scene, report }`, `SceneBuildSchema` in the model): the scene and the report below |
 | `prepareView(graph, viewSpec, catalog, env)`, `buildPreparedScene(prepared, viewSpec, env)`, `preparedViewKey(viewSpec, env)`, `PreparedView` | the same build in two parts: steps (a)–(d), the scene tree and its badges once, then step (e) and the report for any view with the same `preparedViewKey` (see "Performance") |
-| `flipIdOf(zoneId)` | the URL-hash token of a zone for `ViewSpec.flips` (64-bit FNV-1a, base 36, ≤ 13 characters) |
+| `flipIdOf(zoneId)`, `toggleFlipToken(flips, zoneId)` | the URL-hash token of a zone for `ViewSpec.flips` (64-bit FNV-1a, base 36, ≤ 13 characters), and toggling a token in a flips list |
 | `viewSpecOf(renderView, snapshot)` | the `ViewSpec` of a render's view (`RenderView` in the model, the view of `POST /api/render`, `pnpm render` and `pnpm render-scene`): a `hash` decoded by `decodeViewSpec` with its `snapshot` replaced, or the explicit fields normalised (lens `overview` and detail `auto` by default) with each flip's zone id turned into its `flipIdOf` token. The render library re-exports it |
 | `viewportBudget(width, height)`, `DEFAULT_VIEWPORT_BUDGET` | the `auto` rect budget: `width × height / 14000`, clamped to 24–250; 73 for 1280×800 |
 | `NEVER_COLLAPSE_RECTS`, `BUNDLE_THRESHOLD`, `BUNDLE_SIZE` | 100, 120 and 24 (skill gcp-diagram-layout §6) |

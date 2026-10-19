@@ -5,7 +5,12 @@
  * (`types`, each with a reason). Ownership lets `pnpm catalog:check --group <group>` check one group's files
  * while others are mid-edit, and the coverage report count per group. Pure.
  */
-import { AssetTypePatternSchema, AssetTypeSchema, NonEmptyStringSchema, compareText } from '@gcportrait/model';
+import {
+  AssetTypePatternSchema,
+  AssetTypeSchema,
+  NonEmptyStringSchema,
+  compareText,
+} from '@gcportrait/model';
 import * as z from 'zod';
 import { serviceOf } from '../engine/rules.js';
 import type { SourceFile } from './types.js';
