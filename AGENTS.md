@@ -156,9 +156,8 @@ the wording, and a test compares every copy with them.
   > Not affiliated with Google / Google Cloud. gcportrait is an independent open-source project by
   > Florian Chrometz
 
-- **Long form**, once per long-form text (root and package READMEs, docs index, docs, Cloud Shell tutorial,
-  release notes, image label, infra and installer `--help`, Connect page, site author and licence pages;
-  guides in their footer):
+- **Long form**, once per long-form text (root and package READMEs, docs index, docs, release notes, image
+  label, infra and installer `--help`, Connect page, site author and licence pages; guides in their footer):
 
   > gcportrait renders Google Cloud-style architecture diagrams. It is an independent open-source project and
   > is not affiliated with, endorsed by, or sponsored by Google. Google Cloud and the Google Cloud product
@@ -264,6 +263,7 @@ docs/contributing.md §9.
 ## Skills
 
 Load `.agents/skills/NAME/SKILL.md`: **contributor-workflow** for every task, review or release;
+**issue-worker** for milestone-prioritised GitHub issues committed and pushed to a feature branch;
 **gcp-diagram-style** for visuals, exports, accessibility or render review; **gcp-diagram-layout** for
 containment, layout, routing, disclosure or performance; **gcp-asset-catalog** for types, relations, lenses,
 icons, console links or coverage; **cai-ingestion** for CAI, parsing, permissions, quota, timeline or demos.

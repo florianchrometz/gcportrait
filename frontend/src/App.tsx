@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { Route, Routes } from './router';
+import { Navigate, Route, Routes } from './router';
 
 import { AuthProvider } from './auth/AuthProvider';
 import type { DiagramWorkersFactory } from './diagram/pipeline/workers';
@@ -9,7 +9,6 @@ import { AppModeContext, type AppMode } from './mode';
 import { ConnectPage } from './pages/ConnectPage';
 import { DiagramPage } from './pages/DiagramPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PermissionsPage } from './pages/PermissionsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { SnapshotsPage } from './pages/SnapshotsPage';
 import { AppShell } from './shell/AppShell';
@@ -63,7 +62,7 @@ export function App({ mode, database, preferences, diagramWorkers, snapshots }: 
                           <Route index element={<ConnectPage />} />
                           <Route path="diagram" element={<DiagramPage />} />
                           <Route path="snapshots" element={<SnapshotsPage />} />
-                          <Route path="permissions" element={<PermissionsPage />} />
+                          <Route path="permissions" element={<Navigate to="/" replace />} />
                           <Route path="settings" element={<SettingsPage />} />
                           <Route path="impressum" element={<LegalPage id="impressum" />} />
                           <Route path="privacy" element={<LegalPage id="privacy" />} />

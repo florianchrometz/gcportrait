@@ -103,7 +103,6 @@ export const ROUTES = [
   { path: '/', heading: 'Connect' },
   { path: '/diagram', heading: 'Diagram' },
   { path: '/snapshots', heading: 'Snapshots' },
-  { path: '/permissions', heading: 'Permissions' },
   { path: '/settings', heading: 'Settings' },
 ] as const;
 

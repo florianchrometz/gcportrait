@@ -10,7 +10,7 @@
 import { demoSizeOfRef, isSnapshotRef } from '@gcportrait/model';
 import { createContext, useContext, useEffect, useState, type ReactElement, type ReactNode } from 'react';
 
-import { DEMO_SNAPSHOTS, useAppStore, type SnapshotChoice } from '../state';
+import { DEMO_SNAPSHOTS, useAppState, useAppStore, type SnapshotChoice } from '../state';
 import { bindExtraTicks } from '../timeline/extraTicks';
 import { demoLabel, distinctLabels } from './labels';
 import { createSnapshotLibrary, type SnapshotLibrary } from './library';
@@ -26,18 +26,22 @@ const SnapshotLibraryContext = createContext<SnapshotLibrary | null>(null);
 const SnapshotListingContext = createContext<SnapshotListing | null>(null);
 
 /**
- * The demo organisations first, then the stored snapshots the demo list does not already name, labelled as the
- * Snapshots page labels them (no two alike).
+ * The demo organisations first (unless signed in), then the stored snapshots the demo list does not already name,
+ * labelled as the Snapshots page labels them (no two alike).
  */
-export function snapshotChoices(snapshots: readonly ListedSnapshot[]): readonly SnapshotChoice[] {
-  const choices: SnapshotChoice[] = [...DEMO_SNAPSHOTS];
+export function snapshotChoices(
+  snapshots: readonly ListedSnapshot[],
+  includeDemo = true,
+): readonly SnapshotChoice[] {
+  const choices: SnapshotChoice[] = includeDemo ? [...DEMO_SNAPSHOTS] : [];
   const known = new Set<string>(choices.map((choice) => choice.ref));
   const labels = distinctLabels(snapshots.map(({ record }) => record));
   for (const { record } of snapshots) {
     const ref = record.id;
     if (!isSnapshotRef(ref) || ref === '' || known.has(ref)) continue;
-    known.add(ref);
     const size = demoSizeOfRef(ref);
+    if (!includeDemo && (size !== null || record.meta.source === 'demo')) continue;
+    known.add(ref);
     choices.push({
       ref,
       label: size !== null ? demoLabel(size) : (labels.get(record.id) ?? record.id),
@@ -68,6 +72,7 @@ export function SnapshotLibraryProvider({
   const [current] = useState<SnapshotLibrary>(() => library ?? idleLibrary());
   const [listing, setListing] = useState<SnapshotListing | null>(null);
   const store = useAppStore();
+  const sessionStatus = useAppState((state) => state.connect.session.status);
 
   useEffect(() => {
     let live = true;
@@ -86,11 +91,11 @@ export function SnapshotLibraryProvider({
 
   useEffect(() => {
     if (listing === null) return;
-    const available = snapshotChoices(listing.snapshots);
+    const available = snapshotChoices(listing.snapshots, sessionStatus !== 'signed-in');
     store.updateSnapshot((snapshot) =>
       sameChoices(snapshot.available, available) ? snapshot : { ...snapshot, available },
     );
-  }, [store, listing]);
+  }, [store, listing, sessionStatus]);
 
   useEffect(() => {
     if (listing === null) return undefined;

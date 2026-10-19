@@ -10,11 +10,11 @@ trademarks of Google and are used under Google's icon usage terms.
 
 For people who use gcportrait or run an instance of it. They say what to do; `node scripts/user-docs.mjs` (run
 by `pnpm test`) fails when the ten guides from modes.md to api.md name a command, flag or setting the tree
-does not have; when a guide, getting-started.md, cloudshell-tutorial.md, website.md or a README for running
-gcportrait logs what was verified when and where (a dated note, a machine, a timed run, a recorded run in
-code); and when self-host.md asks for more than the project id, the OAuth client id and the email address to
-grant. The project's website (`gcportrait.app`) builds its /docs/ pages from the same files, and its "About
-the author" section from [author.md](author.md).
+does not have; when a guide, getting-started.md, website.md or a README for running gcportrait logs what was
+verified when and where (a dated note, a machine, a timed run, a recorded run in code); and when self-host.md
+asks for more than the project id, the OAuth client id and the email address to grant. The project's website
+(`gcportrait.app`) builds its /docs/ pages from the same files, and its "About the author" section from
+[author.md](author.md).
 
 | Guide | What it covers |
 |---|---|
@@ -29,7 +29,6 @@ the author" section from [author.md](author.md).
 | [self-host-options.md](self-host-options.md) | Optional deployment choices and troubleshooting. |
 | [configuration.md](configuration.md) | The reference for settings, defaults and installer flags. |
 | [api.md](api.md) | The HTTP API, with request examples, errors and limits. |
-| [cloudshell-tutorial.md](cloudshell-tutorial.md) | The guided self-hosting tutorial in Cloud Shell. |
 
 ## For contributors
 
@@ -51,8 +50,8 @@ the author" section from [author.md](author.md).
 - [AGENTS.md](../AGENTS.md): the rules of the project, the repository map, the commands and how to work a
   task, for humans and AI assistants alike; a top-level folder with rules of its own holds them in an
   `AGENTS.md` of its own, which the root names.
-- [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion and contributor-workflow
-  skills, the handbooks that apply AGENTS.md's rules, usable as checklists by reviewers too.
+- [.agents/skills/](../.agents/README.md): style, layout, asset catalog, ingestion, contributor-workflow and
+  issue-worker skills, the handbooks that apply AGENTS.md's rules, usable as checklists by reviewers too.
 - [brand/](../brand/README.md): `icon.svg`, the one source of gcportrait's mark (the favicons and the
   website's logo).
 - Each workspace package's `README.md` (`frontend/`, `backend/`, `e2e/`, `packages/*/`): its scripts,

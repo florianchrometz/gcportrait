@@ -36,12 +36,6 @@ add its flag to the same line.
 When it is done, open the address it prints: "Try the demo" works at once, and "Sign in with Google" shows as
 not configured until step 3.
 
-[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/florianchrometz/gcportrait.git&cloudshell_git_branch=main&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md&show=ide%2Cterminal)
-**Guided, in the browser, without a terminal of your own.** The button opens this repository in Cloud Shell
-with a tutorial, [cloudshell-tutorial.md](cloudshell-tutorial.md), that takes you through the same three
-steps. To build the image from source instead, see [Building from
-source](self-host-options.md#building-from-source).
-
 ### 2. Create the OAuth client
 
 "Sign in with Google" needs an OAuth client of your own. Google offers no API for creating one, and the client
@@ -99,7 +93,7 @@ may use; the instance's project works for its Owner. Your own project is the sim
 gcloud projects add-iam-policy-binding YOUR_PROJECT --member="user:YOUR_EMAIL" --role="roles/cloudasset.viewer"
 ```
 
-The app's Permissions page shows the exact commands for any scope and account, and
+The app's Connect page shows the exact commands for any scope and account, and
 [permissions.md](permissions.md) explains each one. For a team that wants to grant read access once instead of
 to every person, see [Service-account mode](self-host-options.md#service-account-mode).
 

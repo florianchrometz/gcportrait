@@ -41,11 +41,7 @@ export const GUIDES = Object.freeze([
 ]);
 
 /** Other documents whose commands are checked too. */
-const COMMAND_DOCS = Object.freeze([
-  'docs/README.md',
-  'docs/getting-started.md',
-  'docs/cloudshell-tutorial.md',
-]);
+const COMMAND_DOCS = Object.freeze(['docs/README.md', 'docs/getting-started.md']);
 
 /**
  * Other documents, checked for verification logs only (their commands are not all the scripts'), besides the

@@ -49,14 +49,13 @@ const LONG_FORM_COPIES: readonly Copy[] = [
   },
 ];
 
-/** The 15 canonical documents that carry the long form. */
+/** The 14 canonical documents that carry the long form. */
 const LONG_FORM_DOCUMENTS: readonly { readonly copy: string; readonly file: string }[] = [
   { copy: 'the root README (README.md)', file: 'README.md' },
   { copy: 'the third-party material register (THIRD_PARTY.md)', file: 'THIRD_PARTY.md' },
   { copy: 'the brand licence (brand/LICENSE.md)', file: 'brand/LICENSE.md' },
   { copy: 'the docs index (docs/README.md)', file: 'docs/README.md' },
   { copy: 'the website author section (docs/author.md)', file: 'docs/author.md' },
-  { copy: 'the Cloud Shell tutorial (docs/cloudshell-tutorial.md)', file: 'docs/cloudshell-tutorial.md' },
   { copy: 'the legal fact sheets index (docs/legal/README.md)', file: 'docs/legal/README.md' },
   { copy: 'the security policy (docs/security.md)', file: 'docs/security.md' },
   { copy: 'the threat model (docs/threat-model.md)', file: 'docs/threat-model.md' },
@@ -89,7 +88,13 @@ for (const { copy, file } of LONG_FORM_DOCUMENTS) {
 const allMarkdownFiles = (dir: string = REPO): string[] => {
   const result: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.claude') continue;
+    if (
+      entry.name === 'node_modules' ||
+      entry.name === '.git' ||
+      entry.name === '.claude' ||
+      entry.name === '.worktrees'
+    )
+      continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       result.push(...allMarkdownFiles(full));

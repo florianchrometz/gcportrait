@@ -37,6 +37,10 @@
   padding: var(--space-1) var(--space-1);
 }
 
+.wordmarkGc {
+  color: var(--color-primary);
+}
+
 /* gcportrait's mark before the wordmark (brand/icon.svg, served as favicon.svg): a 24-pixel square, centred on the
    wordmark's line, the mark reading as the logo beside the name as on the website. */
 .mark {

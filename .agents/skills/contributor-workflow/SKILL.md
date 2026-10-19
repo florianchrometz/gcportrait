@@ -29,10 +29,11 @@ procedure and the checklists.
   [The SPDX header](../../../docs/contributing.md#the-spdx-header) explains placement, exemptions and
   registering an unknown type; `node scripts/check-provenance.mjs --list-exempt` prints the check's rules
   and exemptions. Run `pnpm provenance` to check the tree.
-- Branch or worktree per topic: `<topic>-<slug>` or `<issue>-<slug>` (for example `412-gutter-lanes`, or
-  `work/<N>` when working an issue). The `main` branch is protected by ruleset `#25366182`: direct
-  pushes are blocked; every change merges via pull request and rebase (`gh pr merge <PR> --rebase`).
-- Use isolated worktrees (for example under `.claude/worktrees/wt-<N>`) when working tasks in parallel to
+- Branch or worktree per topic or release batch (for example `work/v1.0.1` or `<issue>-<slug>`; see the
+  [issue-worker skill](../issue-worker/SKILL.md)). The `main` branch is protected by ruleset `#25366182`:
+  direct pushes are blocked; assistants create, commit to and push feature branches, while opening, reviewing
+  and merging pull requests is manual maintainer work.
+- Use isolated worktrees (for example under `.worktrees/wt-<N>`) when working tasks in parallel to
   avoid cross-task pollution and uncommitted changes colliding. Keep worktrees clean: repository tooling
   (`scripts/lib/repo-files.mjs` via `listRepoFiles`) scans both cached and untracked files not matched by
   repository `.gitignore` files (`git ls-files --cached --others`). Unignored scratch or temporary files

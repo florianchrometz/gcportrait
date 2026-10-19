@@ -91,8 +91,8 @@ src/shell/topbar/       TopBar (composes only) and one file per control group (s
 src/ui/                 headless accessible primitives: Menu, MenuButton, Select, Combobox, Listbox, Popover,
                         Dialog, SegmentedControl, Slider, Tooltip (section "UI primitives" below); screen.ts, the
                         layouts' breakpoints and useScreen (section "Layouts" below)
-src/pages/              Connect, Diagram, Snapshots, Permissions, Settings, not found; pages/diagram/: the
-                        diagram page's TimelineBar (the timeline)
+src/pages/              Connect, Diagram, Snapshots, Settings, not found; pages/diagram/: the diagram page's
+                        TimelineBar (the timeline)
 src/timeline/           the timeline: tick math, cache keys, the read scheduler, playback, the bar's model,
                         the controller, the data worker's side (worker/) (section "Timeline" below)
 src/drawer/             the details drawer beside the canvas, or over it on a phone or a tablet (section "Details
@@ -111,7 +111,7 @@ src/api/config.ts       GET /api/config client (live mode only: auth/AuthProvide
 src/api/demoConfig.ts   a demo build's configuration, built in from VITE_DEMO or VITE_STATIC_DEMO and its variables:
                         what a demo-only instance's /api/config answers (section "Demo builds" below)
 src/demoOnly.ts         useDemoOnly() (the backend's DEMO_ONLY; the Connect page's demo-only variant, the
-                        demo badge, the Permissions note) and useLegalPages() (`legal` in /api/config)
+                        demo badge) and useLegalPages() (`legal` in /api/config)
 src/projectSite.ts      the website's address and its self-hosting guide, the demo-only Connect page's link
 src/legal/              the legal pages: /impressum and /privacy from GET /api/legal, a Markdown reader that
                         never produces HTML (markdown.ts, RenderMarkdown.tsx), the footer's "Impressum · Privacy",
@@ -124,16 +124,17 @@ src/test/               test setup and helpers (StrictMode for every render, ren
 
 ## Routes and the URL hash
 
-`/` Connect, `/diagram`, `/snapshots`, `/permissions`, `/settings`, `/impressum`, `/privacy`; anything else
-shows a not-found page inside the shell. Below a base path (the static demo's `/demo/`, Vite's `base`), the
-router's basename is that path and every route lives below it; the "Copy link" button writes the link with it
-too. The URL **hash is reserved for the ViewSpec** (`@gcportrait/model`) and the router never writes it. The
-app uses `BrowserRouter`, not a hash router. The store's `view.lastDiagramHash` remembers the last hash seen
-on `/diagram`, and `shell/viewHash.tsx` (`useDiagramLinkTarget`) restores it on the Diagram navigation link,
-so leaving the diagram for Settings and coming back keeps the view. On `/diagram` itself the link keeps the
-current hash. Code changes the view only through the app store's actions (`useDiagramActions()`, section
-"App state" below), which write the hash through the router, so the router's location and this memory stay
-current. The skip link moves focus without touching the hash.
+`/` Connect, `/diagram`, `/snapshots`, `/settings`, `/impressum`, `/privacy` (`/permissions` redirects to `/`,
+preserving the URL hash); anything else shows a not-found page inside the shell. Below a base path (the static
+demo's `/demo/`, Vite's `base`), the router's basename is that path and every route lives below it; the "Copy
+link" button writes the link with it too. The URL **hash is reserved for the ViewSpec** (`@gcportrait/model`)
+and the router never writes it. The app uses `BrowserRouter`, not a hash router. The store's
+`view.lastDiagramHash` remembers the last hash seen on `/diagram`, and `shell/viewHash.tsx`
+(`useDiagramLinkTarget`) restores it on the Diagram navigation link, so leaving the diagram for Settings and
+coming back keeps the view. On `/diagram` itself the link keeps the current hash. Code changes the view only
+through the app store's actions (`useDiagramActions()`, section "App state" below), which write the hash
+through the router, so the router's location and this memory stay current. The skip link moves focus without
+touching the hash.
 
 **A route change** ("Try the demo", a top-bar link, Back, a saved view applied from another page) moves focus
 to `<main>` and announces the new page's title in a polite live region (`AppShell`), as a page load would,
@@ -150,7 +151,7 @@ seven slices (`slices.ts`):
 | Slice | Holds | Source of truth | Written by |
 |---|---|---|---|
 | `view` | `hash` (as in the address bar, `''` away from `/diagram`), `spec` (`decodeViewSpec(hash)`), `onDiagram`, `lastDiagramHash` (the last non-empty hash on `/diagram`, kept when navigating away) | the URL hash on `/diagram` | the router (`syncLocation`), the view actions (internal `writeView`) |
-| `snapshot` | `ref` (the view's `snapshot`), `status` (`none`, `loading`, `ready`, `error`), the loading `stage` (`generate`, `ingest`, `graph`), `source` (scope, read time, asset count), `error`, `available` (what the Snapshot menu offers: the demo organisations S, M, L, then every stored snapshot, written by `snapshots/SnapshotLibraryProvider.tsx`; any `demo:` size, XL included, opens from the hash) | the data worker's answers | the pipeline controller |
+| `snapshot` | `ref` (the view's `snapshot`), `status` (`none`, `loading`, `ready`, `error`), the loading `stage` (`generate`, `ingest`, `graph`), `source` (scope, read time, asset count), `error`, `available` (what the Snapshot menu offers: the demo organisations S, M, L while not signed in, then every stored snapshot, written by `snapshots/SnapshotLibraryProvider.tsx`; any `demo:` size, XL included, opens from the hash) | the data worker's answers | the pipeline controller |
 | `pipeline` | `key` (the view's scene key), `result` (`{ key, answer: SceneAnswer, layout }`), `pending` (`{ ref, stage }`), `error` (message and the node ids a refused layout named), `canvas` (the diagram page's measured size, null off the page), `viewport` (the size the result was asked at), `requests` | the two workers | the pipeline controller |
 | `selection` | `selected` and `highlighted` (the view's `selection` and `highlight`), `hovered` (the node under the pointer) | the hash; the canvas for `hovered` | derived with the view; `setHovered` |
 | `ui` | `drawerOpen`, `popover` (the one open top-bar popup: `'lens'`, `'snapshot'`, …), `sheet` (the top bar's open fold on a phone or a tablet, `'view'` or `'more'`; never open with the drawer: opening one sets `drawerOpen` false, `apart`), `jump` (a pending camera glide `{ id, seq, mode? }`) | the page only; **never in the hash** | `updateUi`, `usePopover`, `useSheet`, `actions.jumpTo` |
@@ -324,7 +325,7 @@ is CSS.
 | Details drawer | a column beside the canvas, 360–420 px | a panel over the canvas's right side, at most half the canvas wide; its header and details scroll together inside it | a sheet over the canvas's lower half, taken to the canvas's whole height and back by its handle (it settles at half or full; dragged down it follows the finger and fades once letting go would close it), its header and details scrolling together inside it; at full height the canvas's content is hidden |
 | Timeline bar | one row; the slider and its dates sit above the bar's middle, so the day markers under the track fit in below the reach of the thumb's focus ring | the readout below the slider's line, which is as on a phone | the slider across the width on a line of its 44-pixel thumb and, below the reach of the thumb's focus ring, the day markers under its track (the bar no taller for them); the readout below, then the buttons and the playback options; on a workspace under 18.5rem tall (a phone turned sideways), while the drawer is open, one line, the slider and the step and play buttons after it, the readout and the playback options hidden until the drawer closes, so the canvas holds the half-height drawer's header |
 | Disclosure bar | a panel at the canvas's bottom right | at the canvas's bottom left, at most half the canvas wide, clear of the drawer's panel; while the drawer is open, the camera keeps the drawing clear of it too, and at rest a jump, a flip and the keyboard's focus keep a node clear of it | a compact row across the canvas's foot, above the drawer's sheet while it is open (the camera then keeps the drawing in the band above it), or hidden while it is open on a canvas under 20.25rem tall (a phone turned sideways, the smallest phones upright); hidden while View or More is open |
-| Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Permissions page's reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
+| Pages, dialogs, footer | as they are | the pages in one column, a table too wide for it scrolling sideways in its own box (a snapshot row's actions wrap first, so the Snapshots page's tables fit a tablet); the footer's notice beside its links while it keeps 16rem, above them when narrower | less room around the pages; the Connect page's permission reference a list under a heading per mode instead of a table, each command as wide as the page with its Copy button under it; dialogs nearly the window's size |
 
 **Folds.** View and More are `ui/Popover` sheets (`sheet`), `inline` on a desktop: no button, the anchor and
 the panel `display: contents`, so the controls are the rows' own flex items and the desktop's layout and tab
@@ -342,10 +343,10 @@ the bars and the drawer pad with `env(safe-area-inset-*)` (`viewport-fit=cover` 
 reads a finger itself (section "Diagram renderer", "Touch"). A table too wide for its page scrolls sideways in
 a box of its own that is positioned (`tableWrap` in `snapshots/` and `preflight/`), as the permission check's
 panel is, since `.visually-hidden` text without a positioned box around it is placed against the window,
-outside the page's own scroll box, and makes the document scroll. On a phone the Permissions page's reference
-is a list of commands under a heading per mode and the Snapshots page's tables a list of cards, one per row
-(`preflight/PermissionsGuide.tsx`, `snapshots/RowTable.tsx`, by `useScreen()`; the same commands, columns and
-buttons either way).
+outside the page's own scroll box, and makes the document scroll. On a phone the Connect page's permission
+reference is a list of commands under a heading per mode and the Snapshots page's tables a list of cards, one
+per row (`preflight/PermissionsGuide.tsx`, `snapshots/RowTable.tsx`, by `useScreen()`; the same commands,
+columns and buttons either way).
 
 **Checks.** `shell/parity.test.tsx` (widths through `test/viewport.ts`, a `matchMedia` for a width) and
 `e2e/tests/mobile.spec.ts`, run with `e2e/tests/touch.spec.ts` by `pnpm --filter @gcportrait/frontend mobile`
@@ -441,9 +442,9 @@ control's fills and that no other sheet defines a `danger` or `primary` class, a
   announced as unavailable, and do nothing when activated (the `ui/` primitives have the same inert state
   through their `disabled` prop). Section "Top bar" lists the primitive each control is built on.
 - Both themes are checked by axe in the e2e suite (`e2e/tests/a11y.spec.ts`) on every page in demo mode
-  (`/`, `/diagram`, `/snapshots`, `/permissions`, `/settings`, a page not found), on the diagram with demo S,
-  M and L drawn (at rest, with the keyboard inside a zone, with a node's menu and the drawer open), and on the
-  live-mode Connect page.
+  (`/`, `/diagram`, `/snapshots`, `/settings`, a page not found), on the diagram with demo S, M and L drawn
+  (at rest, with the keyboard inside a zone, with a node's menu and the drawer open), and on the live-mode
+  Connect page.
 
 ## Storage schema (IndexedDB, database `gcportrait`)
 
@@ -489,14 +490,13 @@ instance's `GET /api/config` would give (no OAuth client, no service-account mod
 `VITE_APP_VERSION`, `VITE_SOURCE_URL`, `VITE_LEGAL_IMPRESSUM_URL` and `VITE_LEGAL_PRIVACY_URL`, and
 `auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance
 (`useDemoOnly()`): a "Demo mode" badge in the top bar, the Connect page with the demo, the way to one's own
-project and the privacy note, the Permissions page's note, and the footer's source link from `VITE_SOURCE_URL`
-(section "Source link"). No `/api` proxy and no backend call at all. The two variables exclude each other: a
-build is one or the other.
+project and the privacy note, and the footer's source link from `VITE_SOURCE_URL` (section "Source link"). No
+`/api` proxy and no backend call at all. The two variables exclude each other: a build is one or the other.
 
 Demo builds have no sign-in: the account menu is absent and Google's sign-in script is never loaded (the
-static bundle leaves the code out entirely, section "Static demo"). In every mode the Snapshot menu and the
-empty diagram canvas offer the demo organisations S, M and L (`#snapshot=demo:M`); they are generated in the
-browser, in the data worker, and never fetched (the worker fetches only the build's data tables, below).
+static bundle leaves the code out entirely, section "Static demo"). While not signed in, the Snapshot menu and
+the empty diagram canvas offer the demo organisations S, M and L (`#snapshot=demo:M`); they are generated in
+the browser, in the data worker, and never fetched (the worker fetches only the build's data tables, below).
 
 ## Static demo
 
@@ -510,7 +510,7 @@ bundle; [docs/website.md, "The demo"](../docs/website.md#the-demo) is the guide.
   `VITE_APP_VERSION`, `VITE_SOURCE_URL`, `VITE_LEGAL_IMPRESSUM_URL` and `VITE_LEGAL_PRIVACY_URL`, and
   `auth/AuthProvider.tsx` puts it into the store at once. From there the app is a demo-only instance
   (`useDemoOnly()`), as `pnpm dev:demo` is: the Connect page with the demo, the way to one's own project and
-  the privacy note, the demo badge, the Permissions note. The footer's source link and the legal links come
+  the privacy note, and the demo badge. The footer's source link and the legal links come
   from that configuration. `AuthProvider.tsx` compares `import.meta.env.VITE_STATIC_DEMO` with `'1'`
   where it is used, so the build sees a constant and leaves the sign-in code out: the static bundle has no
   Google sign-in script, no tokeninfo and no `/api/config` (`pnpm website:check` looks for their hosts).
@@ -604,10 +604,11 @@ under `prefers-color-scheme: dark`. The top bar shows the same file beside the w
 empty `alt` from `BASE_URL` (`import.meta.env.BASE_URL` + `favicon.svg`), 24 pixels square and centred on the
 wordmark, with the website header's gap (0.6rem) before the name. An image's `prefers-color-scheme` follows
 the `color-scheme` the theme sets on `<html>`, so the mark takes the app's theme even when it differs from the
-system's. There is no PNG fallback: it would be a second, derived file to keep in step with the source, and a
-PNG cannot follow the theme; a browser without SVG favicons shows its default icon. Tests: `TopBar.test.tsx`,
-`TopBar.css.test.ts` and `e2e/tests/shell.spec.ts` (the served file is `brand/icon.svg` byte for byte);
-`scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
+system's, and the wordmark colours `gc` in `--color-primary` and `portrait` in `--color-on-surface` as on the
+website and in `docs/media/brand/`. There is no PNG fallback: it would be a second, derived file to keep in
+step with the source, and a PNG cannot follow the theme; a browser without SVG favicons shows its default
+icon. Tests: `TopBar.test.tsx`, `TopBar.css.test.ts` and `e2e/tests/shell.spec.ts` (the served file is
+`brand/icon.svg` byte for byte); `scripts/static-demo.mjs` and `pnpm website:check` check the static demo's.
 
 ## Sign-in (`src/auth/`)
 
@@ -678,17 +679,17 @@ card: the window blocked (allow pop-ups), the window closed before the end, or G
 (its error page breaks the window's link to the page, so GIS reports it closed; the usual cause is an address
 missing from the client's authorised JavaScript origins), access not allowed, the script not loading.
 
-**After sign-in.** Focus moves to the Connect page's new "Read your environment" section: the mode selector
-(`connect.mode`; only "your account" unless `/api/config` says `saMode`, with the service-account gate
-explained in the words of [docs/permissions.md](../docs/permissions.md) and a link to the Permissions page),
-then the scope (`scope/ScopeStep.tsx`, the same as on the Permissions page) and "Pull now"
-(`import/PullNow.tsx`); they read the mode and the session from the store. After an expiry the section stays,
-its mode selector and scope inert. The permission check (`connect.preflight`, which "Pull now" relies on)
-answered for one account, so `AuthProvider` clears it on a sign-out and when another account than the one last
-signed in signs in, after an expiry or a sign-out (`anotherAccount` in `types.ts`; an account whose email
-Google did not say counts as another). That holds whichever page is open; `preflight/usePreflight.ts` also
-cancels a check still under way when the Permissions page sees the sign-out. The scope and the quota project
-picked stay.
+**After sign-in.** Focus moves to the Connect page's new "Read your environment" section: Step 1 holds the
+mode selector (`connect.mode`; only "your account" unless `/api/config` says `saMode`, with the
+service-account gate explained in the words of [docs/permissions.md](../docs/permissions.md) and a link to
+`#permissions-sa`) and the scope (`scope/ScopeStep.tsx`), Step 2 the permission check
+(`preflight/PreflightPanel.tsx`) and Step 3 "Pull now" (`import/PullNow.tsx`); they read the mode and the
+session from the store. After an expiry the section stays, its mode selector and scope inert. The permission
+check (`connect.preflight`, which "Pull now" relies on) answered for one account, so `AuthProvider` clears it
+on a sign-out and when another account than the one last signed in signs in, after an expiry or a sign-out
+(`anotherAccount` in `types.ts`; an account whose email Google did not say counts as another). That holds
+whichever page is open; `preflight/usePreflight.ts` also cancels a check still under way when the Connect page
+sees the sign-out. The scope and the quota project picked stay.
 
 **For code that calls the backend with the token**: read the session and the mode from
 the store (`useAppState((s) => s.connect)`), and make each request with `fetchWithToken(useAuth(), '/api/…',
@@ -701,12 +702,12 @@ IndexedDB, cookies, the DOM, any URL or the console.
 
 ## Scope picker and permission check (`src/scope/`, `src/preflight/`)
 
-The Permissions page (`pages/PermissionsPage.tsx`) checks a scope with the signed-in person's token
-and says what is missing, with copy-ready `gcloud` commands; below it, what each mode needs (the table of
+The Connect page (`pages/ConnectPage.tsx`) checks a scope with the signed-in person's token in Step 2 of
+"Read your environment" (or in "Check a scope" when signed out) and says what is missing, with copy-ready
+`gcloud` commands; below the export card, it shows what each mode needs (the table of
 [docs/permissions.md](../docs/permissions.md), its commands' variables as fields prefilled from what the page
 knows; section "Fillable commands") and service-account mode in that guide's words, with the instance's
-account and the gate. Signed out it shows the sign-in card; in a demo build it says that nothing can be
-checked here and keeps the guidance.
+account and the gate.
 
 ```
 src/scope/
@@ -745,10 +746,9 @@ back the quota project last picked for that scope; the quota project goes to `co
 remembered per scope. Only ids and display names are stored, never a token or an email.
 
 **The check.** `usePreflight` sends `{ scope, mode, quotaProject? }` (the quota project in user mode only) and
-keeps the answer in `connect.preflight` with the request it answers, so the Connect page and the Permissions
-page show the same one; a result for another scope, mode or quota project is marked out of date. The backend's
-codes become sentences in `copy.ts` only. `ScopeStep` and `PreflightPanel` are what the Connect page's "Read
-your environment" section can show for its scope step.
+keeps the answer in `connect.preflight` with the request it answers; a result for another scope, mode or quota
+project is marked out of date. The backend's codes become sentences in `copy.ts` only. `ScopeStep` and
+`PreflightPanel` are what the Connect page's "Read your environment" section shows for Step 1 and Step 2.
 
 **Service-account mode.** The "Service-account mode" section names the account from `/api/config`
 (`backendServiceAccount`, the identity the backend resolved) and words the gate as the instance runs it:
@@ -764,7 +764,7 @@ Tests: `scope/scope.test.ts`, `scope/api.test.ts`, `preflight/api.test.ts`, `pre
 
 ## Fillable commands (`src/commands/`)
 
-Every command the app shows (the Permissions page's checklist and reference table, the Connect page's "How to
+Every command the app shows (the Connect page's permission checklist, reference table and "How to
 make an export with gcloud") names the values to fill in as tokens of the one registry the website's docs
 share, `COMMAND_VARIABLES` in `@gcportrait/model` (`YOUR_ORG_ID`, `YOUR_FOLDER_ID`, `YOUR_PROJECT_ID`,
 `YOUR_EMAIL`, `YOUR_SA_EMAIL`, `YOUR_QUOTA_PROJECT`, `YOUR_BUCKET`, `YOUR_OPERATION_NAME`; label, description,
@@ -774,7 +774,7 @@ filled), and a Copy button that copies the command with the values, an unfilled 
 is described by a note under the command ("1 value to fill"), and a polite live region says "Copied." or
 "Copied, with 1 value still to fill: YOUR_BUCKET.". A value not of the variable's format is marked when its
 field is left (`aria-invalid`, "Check Folder number: digits only." in the note), never refused. The
-Permissions page's reference table has the Variables panel (`commands/VariablesPanel.tsx`): each of its
+Connect page's permission reference table has the Variables panel (`commands/VariablesPanel.tsx`): each of its
 variables with its label, token, description and example, to fill once, and "Clear values".
 
 | Where | What it does |
@@ -806,7 +806,7 @@ variable or another placeholder), `commands/commands.test.tsx` and `e2e/tests/pe
 ## Live pull and export load (`src/import/`)
 
 The two ways from Google Cloud into a snapshot in this browser, both on the Connect page (skill cai-ingestion
-§1): "Pull now" reads the scope checked on the Permissions page or in "Read your environment" from Cloud Asset
+§1): "Pull now" reads the scope checked in "Read your environment" from Cloud Asset
 Inventory, and the export card loads a Cloud Asset Inventory export. Both end with the diagram opened on the
 new snapshot (`actions.setSnapshot`), at once, or after the notes the import left (lines left out, an
 estimated read time) with "Open the diagram".
@@ -838,7 +838,7 @@ and a permission check (`connect.preflight`) that answered `ready` for exactly t
 project. In user mode the pull uses the quota project the check found usable (required; never the instance's
 project: AGENTS.md, Security and privacy); in service-account mode none. Until then the button is inert
 (`aria-disabled`, focusable) and its hint says what is missing ("Choose a scope first.", "Check the
-permissions again for this choice.", …), with a "Check permissions" link to the Permissions page while the
+permissions again for this choice.", …), with a "Check permissions" link to `#permissions-check` while the
 check is what is missing.
 
 **The stream** (`run.ts`): `fetchWithToken` (src/auth) posts the body to `/api/assets/stream` or
@@ -880,7 +880,7 @@ Either way the snapshot is an extra tick on its scope's timeline at that time.
 message, which is shown verbatim: a scope that cannot be listed, a quota project that cannot be used or whose
 API is disabled, a token Google no longer accepts (the session then expires: `auth.rejected`), a read time
 before the scope existed, a bucket that cannot be read, Google busy or slow (with "Try again"). Permission
-problems link the permission check ("Check permissions", the Permissions page), whose checklist names the
+problems link the permission check ("Check permissions", `#permissions-check`), whose checklist names the
 missing grant and its command.
 
 **The progress** (`progress.ts`, `ImportStatus.tsx`): "12 pages · 5,400 assets · 3.2 MB · 0:04" (for an
@@ -897,11 +897,12 @@ Tests: `progress.test.ts`, `target.test.ts`, `sidecar.test.ts`, `commands.test.t
 
 ## Snapshots (`src/snapshots/`)
 
-Snapshots live in this browser only (AGENTS.md, Security and privacy, principle 1): the Connect page's "Try
-the demo" makes them, the Snapshots page lists, loads, exports, imports and deletes them, and the diagram's
-data worker reads them. One object, the **snapshot library** (`library.ts`), does everything; `main.tsx`
-creates it over the app's IndexedDB connection and the snapshot worker, and `SnapshotLibraryProvider` (in
-`App.tsx`, inside the app store) hands it to the pages with its listing, re-read after every change.
+Snapshots live in this browser only (AGENTS.md, Security and privacy, principle 1): "Try the demo" (on the
+Settings page on live instances while not signed in, and on the Connect page on demo-only instances) makes
+them, the Snapshots page lists, loads, exports, imports and deletes them, and the diagram's data worker reads
+them. One object, the **snapshot library** (`library.ts`), does everything; `main.tsx` creates it over the
+app's IndexedDB connection and the snapshot worker, and `SnapshotLibraryProvider` (in `App.tsx`, inside the
+app store) hands it to the pages with its listing, re-read after every change.
 
 ```
 src/snapshots/
@@ -922,7 +923,8 @@ src/snapshots/
                         the question's words, "Do not ask again in this session" in sessionStorage
   LargeSnapshotGuard.tsx  the guard in React: its provider and alert dialog, `useLargeSnapshotGuard`, and the
                         diagram page's `useLargeSnapshotGate`
-  DemoEntry.tsx         the Connect page's demo card: size S–XL (ui/SegmentedControl), Try the demo, progress
+  DemoEntry.tsx         the demo card: size S–XL (ui/SegmentedControl), Try the demo, progress (Settings page on
+                        live instances while not signed in; Connect page on demo-only instances)
   SnapshotTable.tsx, ImportPanel.tsx, StorageUsage.tsx, JobStatus.tsx   the Snapshots page's parts
                         (JobStatus with Cancel for an import, also on the Connect page's export card)
   useImportSignal.ts    a file import's abort signal: one per import, aborted by its Cancel and by leaving

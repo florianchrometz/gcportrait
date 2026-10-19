@@ -432,7 +432,7 @@ and is listed in [THIRD_PARTY.md](../THIRD_PARTY.md); a new dependency must pass
 2. **Branch.** Name it after the topic: `<topic>-<slug>` or `<issue>-<slug>`, for example `ingest-parser`,
    `412-gutter-lanes`, or `work/<N>` when working an issue. The `main` branch is protected by ruleset
    `#25366182`: direct pushes are blocked, and every change must merge via a pull request. When working
-   tasks in parallel, use isolated git worktrees (for example under `.claude/worktrees/wt-<N>`) to avoid
+   tasks in parallel, use isolated git worktrees (for example under `.worktrees/wt-<N>`) to avoid
    cross-task conflicts. Keep the working tree clean: repository tooling (`scripts/lib/repo-files.mjs` via
    `listRepoFiles`) scans both tracked and untracked files not matched by repository `.gitignore` files
    (`git ls-files --cached --others`), so unignored scratch files will be checked by `pnpm provenance`.

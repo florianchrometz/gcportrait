@@ -65,15 +65,6 @@ export const IMAGE = 'ghcr.io/florianchrometz/gcportrait';
 export const INSTALLER_URL = 'https://gcportrait.app/install.sh';
 export const INSTALL_COMMAND = `curl -fsSL ${INSTALLER_URL} | bash -s -- --project YOUR_PROJECT`;
 
-/**
- * The "Open in Cloud Shell" link of README.md and docs/self-host.md: the guided tutorial (docs/cloudshell-tutorial.md).
- */
-export const CLOUD_SHELL_URL =
-  'https://shell.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/florianchrometz/gcportrait.git&cloudshell_git_branch=main&cloudshell_workspace=.&cloudshell_tutorial=docs/cloudshell-tutorial.md&show=ide%2Cterminal';
-/** The "Run on Google Cloud" link (Google's Cloud Run Button, app.json at the repository root). */
-export const CLOUD_RUN_BUTTON_URL =
-  'https://deploy.cloud.run/?git_repo=https://github.com/florianchrometz/gcportrait.git&revision=main';
-
 export const PRODUCT_NAME = 'gcportrait';
 /** The one-line pitch, as README.md opens. */
 export const TAGLINE = 'A portrait of your Google Cloud environment.';

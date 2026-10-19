@@ -55,7 +55,9 @@ describe('Pull now', () => {
     });
     const hint = document.getElementById(button().getAttribute('aria-describedby') ?? '');
     expect(hint?.textContent).toBe('Check the permissions for this scope first.');
-    expect(screen.getByRole('link', { name: 'Check permissions' }).getAttribute('href')).toBe('/permissions');
+    expect(screen.getByRole('link', { name: 'Check permissions' }).getAttribute('href')).toBe(
+      '/#permissions-check',
+    );
     await expectNoAxeViolations();
   });
 
@@ -145,7 +147,7 @@ describe('Pull now', () => {
     ).toBeDefined();
     expect(within(alert).getByText(message)).toBeDefined();
     expect(within(alert).getByRole('link', { name: 'Check permissions' }).getAttribute('href')).toBe(
-      '/permissions',
+      '/#permissions-check',
     );
     expect(library.calls).toEqual([]);
     await expectNoAxeViolations();

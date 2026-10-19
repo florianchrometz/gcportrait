@@ -44,9 +44,9 @@ These rules add to the root AGENTS.md, which applies here too.
     (a table's own scroll box, the permission check's panel) rather than placed against the window past the
     page's edge; a table too wide for the page scrolls sideways in that box of its own; a table whose cells
     would squeeze a command to a few characters a line, where it can be neither read nor checked (the
-    Permissions page's reference), is a list on a phone, each command as wide as the page; and a table whose
-    row a reader would have to scroll sideways to read (the Snapshots page's) is a list of cards on a phone,
-    one per row, its cells as labelled lines.
+    Connect page's permission reference), is a list on a phone, each command as wide as the page; and a table
+    whose row a reader would have to scroll sideways to read (the Snapshots page's) is a list of cards on a
+    phone, one per row, its cells as labelled lines.
 
 - Below the desktop's breakpoint `--control-height` grows to `--touch-target`, implementing the shared
   target-size contract in [AGENTS.md](../AGENTS.md), "Style and accessibility", which also holds the safe-area

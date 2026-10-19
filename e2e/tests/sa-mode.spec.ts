@@ -90,12 +90,12 @@ function explainer(page: Page): Locator {
   return page.getByRole('region', { name: 'Service-account mode' });
 }
 
-/** Signs in on the Permissions page and switches to service-account mode. */
+/** Signs in on the Connect page and switches to service-account mode. */
 async function openInServiceAccountMode(page: Page, harness: Harness) {
   await routeApiTo(page, harness);
   const google = await stubGoogle(page, { tokens: [TOKEN] });
-  await page.goto('/permissions');
-  await checkSection(page).getByRole('button', { name: 'Sign in with Google' }).click();
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
   await expect(checkSection(page).getByRole('combobox', { name: 'Scope' })).toBeVisible();
   await checkSection(page).getByRole('radio', { name: 'Service account' }).click();
   await expect(checkSection(page).getByRole('combobox', { name: 'Quota project' })).toHaveCount(0);

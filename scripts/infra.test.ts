@@ -3,15 +3,13 @@
  * infra/: what the image says about itself, what deploy.sh uploads, and how deploy.sh behaves, run with bash
  * against stand-ins for `gcloud`, `curl` and `sleep` that answer from a rule list and log every call
  * (scripts/testing/infra-stub.ts): the checks before any change, a build and a deploy, the marks it keeps on what it
- * creates, IAP, the readiness wait, the next steps it ends with and the banner; and every command of the Cloud Shell
- * tutorial and the Cloud Run Button's hook. Nothing here reaches Google. Beside this file, so that Vitest runs them
- * in parallel: uninstall.sh (infra-uninstall.test.ts), demo-only instances, domains and legal pages
- * (infra-demo-only.test.ts), released images from ghcr.io (infra-ghcr.test.ts) and the installer with the release's
- * deploy scripts (infra-install.test.ts); `pnpm test:infra` runs all five. The non-affiliation wording in the labels,
- * --help and the tutorial: non-affiliation-copies.test.ts.
+ * creates, IAP, the readiness wait, the next steps it ends with and the banner. Nothing here reaches Google. Beside
+ * this file, so that Vitest runs them in parallel: uninstall.sh (infra-uninstall.test.ts), demo-only instances,
+ * domains and legal pages (infra-demo-only.test.ts), released images from ghcr.io (infra-ghcr.test.ts) and the
+ * installer with the release's deploy scripts (infra-install.test.ts); `pnpm test:infra` runs all five. The
+ * non-affiliation wording in the labels and --help: non-affiliation-copies.test.ts.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
@@ -683,181 +681,6 @@ describe.skipIf(!BASH_AVAILABLE)('deploy.sh (bash, against stand-ins)', { timeou
     });
   });
 });
-
-describe.skipIf(!BASH_AVAILABLE)(
-  'docs/cloudshell-tutorial.md (the "Open in Cloud Shell" path), against stand-ins',
-  { timeout: 60_000 },
-  () => {
-    const { run } = useStandIns();
-    const tutorial = read('docs/cloudshell-tutorial.md');
-    /** Every ```sh block, its continuation lines joined, the project placeholder replaced by a project id. */
-    const commands = [...tutorial.matchAll(/^```sh\n([\s\S]*?)^```$/gm)].map((m) =>
-      (m[1] ?? '')
-        .replace(/\\\n\s*/g, '')
-        .trim()
-        .replaceAll('{{project-id}}', 'example-project'),
-    );
-
-    it('is a Cloud Shell tutorial: one H1 first, the duration right after it, steps as H2, known directives only', () => {
-      const lines = tutorial.split('\n');
-      expect(lines[0]).toMatch(/^# \S/);
-      expect(lines.filter((line) => /^# /.test(line))).toHaveLength(1);
-      expect(lines[2]).toBe('<walkthrough-tutorial-duration duration="10"></walkthrough-tutorial-duration>');
-      expect(lines.slice(0, 10)).toContain('<!-- SPDX-License-Identifier: Apache-2.0 -->');
-      expect(lines.filter((line) => /^## /.test(line)).length).toBeGreaterThanOrEqual(5);
-      const directives = new Set([...tutorial.matchAll(/<(walkthrough-[a-z-]+)/g)].map((m) => m[1]));
-      expect([...directives].sort()).toEqual([
-        'walkthrough-conclusion-trophy',
-        'walkthrough-editor-open-file',
-        'walkthrough-footnote',
-        'walkthrough-project-setup',
-        'walkthrough-tutorial-duration',
-      ]);
-      // Commands name the chosen project as {{project-id}}, as Google's own tutorials do
-      // (GoogleCloudPlatform/cloud-shell-tutorials). Left unreplaced it is a harmless word to bash, while
-      // <walkthrough-project-id/> would be a redirection from a file.
-      expect(commands.filter((command) => command.includes('--project')).length).toBeGreaterThanOrEqual(4);
-      for (const command of commands) expect(command).not.toContain('<walkthrough');
-      expect(tutorial).toContain('gcloud config set project {{project-id}}');
-      // The last step opens with the trophy (Cloud Shell's layout rule); opened files exist.
-      const last = tutorial.slice(tutorial.lastIndexOf('\n## '));
-      expect(last.split('\n').filter(Boolean)[1]).toBe(
-        '<walkthrough-conclusion-trophy></walkthrough-conclusion-trophy>',
-      );
-      for (const m of tutorial.matchAll(/filePath="([^"]+)"/g))
-        expect(existsSync(path.join(REPO, m[1] ?? ''))).toBe(true);
-    });
-
-    it('takes the steps deploy.sh ends with, in its order: deploy, open the address, the OAuth client, the redeploy', () => {
-      const steps = tutorial.split('\n').filter((line) => line.startsWith('## '));
-      const order = [
-        '## Deploy',
-        '## Open your instance',
-        '## Create the OAuth client',
-        '## Redeploy with the client id',
-      ];
-      const at = order.map((step) => steps.indexOf(step));
-      expect(at).toEqual([at[0], (at[0] ?? 0) + 1, (at[0] ?? 0) + 2, (at[0] ?? 0) + 3]);
-      expect(at[0]).toBeGreaterThan(0);
-      // The redeploy is the first command with the client id added, as deploy.sh prints it.
-      expect(commands).toContain('infra/deploy.sh --project example-project --oauth-client-id CLIENT_ID');
-    });
-
-    it('runs every deploy.sh and uninstall.sh command it shows, and only well-known gcloud commands besides', () => {
-      expect(commands.length).toBeGreaterThanOrEqual(8);
-      const scripts = commands.filter((command) => command.startsWith('infra/'));
-      expect(scripts.map((command) => command.split(' ')[0])).toEqual([
-        'infra/deploy.sh',
-        'infra/deploy.sh',
-        'infra/deploy.sh',
-        'infra/uninstall.sh',
-      ]);
-      for (const command of scripts) {
-        const [script = '', ...args] = command.split(/\s+/);
-        const name = script === 'infra/deploy.sh' ? 'deploy.sh' : 'uninstall.sh';
-        // uninstall.sh asks for the service name on a terminal; the stand-ins have none, hence --yes.
-        const result = run(name, name === 'uninstall.sh' ? [...args, '--yes'] : args, [
-          ['gcloud', 'services list --enabled*', '*', 0, ALL_APIS],
-          ['gcloud', 'run deploy *', '*', 0, 'Done.\\n'],
-          ['gcloud', 'storage buckets add-iam-policy-binding *', '*', 0, ''],
-          ['gcloud', 'builds submit *', '*', 0, 'DONE\\n'],
-          [
-            'gcloud',
-            'run services describe *metadata.labels*',
-            '*',
-            name === 'uninstall.sh' ? 0 : 1,
-            name === 'uninstall.sh' ? 'managed-by=gcportrait-deploy\\n' : 'NOT_FOUND\\n',
-          ],
-          ['gcloud', '* delete *', '*', 0, ''],
-          ...EMPTY_PROJECT,
-        ]);
-        expect(result.status, `${command}\n${result.out}`).toBe(0);
-      }
-      const others = commands.filter((command) => !command.startsWith('infra/'));
-      expect(others.map((command) => command.split(' ').slice(0, 3).join(' '))).toEqual([
-        'gcloud auth login',
-        'gcloud config set',
-        'echo "https://console.cloud.google.com/auth/clients?project=example-project"',
-        'gcloud projects add-iam-policy-binding',
-      ]);
-      expect(commands).toContain('gcloud config set project example-project');
-      expect(commands).toContain(
-        'gcloud projects add-iam-policy-binding example-project --member="user:$(gcloud config get-value account)" --role=roles/cloudasset.viewer',
-      );
-    });
-  },
-);
-
-describe.skipIf(!BASH_AVAILABLE)(
-  'the Cloud Run Button hook (infra/cloud-run-button.sh, app.json postcreate), against stand-ins',
-  { timeout: 60_000 },
-  () => {
-    const { run } = useStandIns();
-    const BUTTON_ENV = {
-      GOOGLE_CLOUD_PROJECT: 'example-project',
-      GOOGLE_CLOUD_REGION: 'europe-west3',
-      K_SERVICE: 'gcportrait',
-      SERVICE_URL: 'https://gcportrait-abc123-ey.a.run.app',
-      OAUTH_CLIENT_ID: 'none',
-      SA_MODE_ENABLED: 'false',
-    };
-    const hookRules: readonly Rule[] = [
-      ['gcloud', 'run services update *', '*', 0, 'Done.\\n'],
-      ['gcloud', 'projects describe *', '*', 0, `${NUMBER}\\n`],
-    ];
-
-    it('adds what the button cannot set, drops the placeholder client id, and names the next steps', () => {
-      const result = run('cloud-run-button.sh', [], hookRules, 'C', BUTTON_ENV);
-      expect(result.status, result.out).toBe(0);
-      expect(result.out.trimStart().split('\n')[0]).toBe('gcportrait infra/cloud-run-button.sh');
-      expect(result.out).not.toMatch(/affiliated/i);
-      expect(result.calls.filter((call) => call.startsWith('gcloud run services update'))).toEqual([
-        'gcloud run services update gcportrait --project=example-project --region=europe-west3 ' +
-          '--update-env-vars=TRUST_PROXY_HOPS=1 --timeout=900 --cpu-boost --max-instances=10 ' +
-          '--startup-probe=httpGet.path=/healthz,initialDelaySeconds=0,periodSeconds=2,timeoutSeconds=2,failureThreshold=15 ' +
-          '--liveness-probe=httpGet.path=/healthz,periodSeconds=30,timeoutSeconds=5,failureThreshold=3 ' +
-          '--remove-env-vars=OAUTH_CLIENT_ID --quiet',
-      ]);
-      // deploy.sh probes the same way.
-      const deploy = read('infra/deploy.sh');
-      expect(deploy).toContain('--startup-probe="$STARTUP_PROBE" --liveness-probe="$LIVENESS_PROBE"');
-      expect(result.out).toContain(
-        `gcportrait is running at https://gcportrait-${NUMBER}.europe-west3.run.app`,
-      );
-      expect(result.out).toContain('https://console.cloud.google.com/auth/clients?project=example-project');
-      expect(result.out).toContain(
-        'gcloud run services update gcportrait --project=example-project --region=europe-west3 --update-env-vars=OAUTH_CLIENT_ID=CLIENT_ID',
-      );
-      expect(result.out).not.toContain('service-account mode is on');
-      // A later click asks for OAUTH_CLIENT_ID again, and this hook does not run then.
-      expect(result.out).toContain('A later click of the button asks for OAUTH_CLIENT_ID again');
-    });
-
-    it('keeps a real client id, warns about service-account mode, and refuses to run outside the button', () => {
-      const result = run('cloud-run-button.sh', [], hookRules, 'C', {
-        ...BUTTON_ENV,
-        OAUTH_CLIENT_ID: '12345678901-abc.apps.googleusercontent.com',
-        SA_MODE_ENABLED: 'true',
-      });
-      expect(result.status, result.out).toBe(0);
-      expect(result.calls.find((call) => call.startsWith('gcloud run services update'))).not.toContain(
-        '--remove-env-vars',
-      );
-      expect(result.out).toContain(
-        '(The service already has the client id 12345678901-abc.apps.googleusercontent.com',
-      );
-      expect(result.out).toContain(
-        'warning: service-account mode is on, and this service runs as the project',
-      );
-      const outside = run('cloud-run-button.sh', [], hookRules, 'C', {});
-      expect(outside.status).toBe(1);
-      expect(outside.out).toContain(
-        'GOOGLE_CLOUD_PROJECT is not set: the Cloud Run Button sets it for its hooks',
-      );
-      expect(outside.calls).toEqual([]);
-    });
-  },
-);
 
 describe.skipIf(!BASH_AVAILABLE)('install.sh argument parsing', () => {
   function runInstall(args: readonly string[]) {

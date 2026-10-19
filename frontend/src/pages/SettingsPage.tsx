@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
+import { DemoEntry } from '../snapshots/DemoEntry';
+import { useAppState } from '../state';
 import { usePreference } from '../storage/preferences';
 import { THEME_PREFERENCE_LABELS, THEME_PREFERENCES, type ThemePreference } from '../theme/theme';
 import { useTheme } from '../theme/useTheme';
@@ -23,13 +25,14 @@ const THEME_HINTS: Readonly<Record<ThemePreference, string>> = {
 };
 
 /**
- * Settings, saved in this browser: the theme (system, light, dark) and what the diagram canvas shows; and the
- * licences, linked.
+ * Settings, saved in this browser: the theme (system, light, dark), what the diagram canvas shows, the synthetic
+ * demo organisations when not signed in, and the licences, linked.
  */
 export function SettingsPage() {
   useDocumentTitle('Settings');
   const { preference, setPreference } = useTheme();
   const [overlays, setOverlays] = usePreference('diagramOverlays', true);
+  const sessionStatus = useAppState((state) => state.connect.session.status);
 
   return (
     <div className={page.page}>
@@ -86,6 +89,17 @@ export function SettingsPage() {
           </span>
         </div>
       </section>
+      {sessionStatus === 'signed-in' ? null : (
+        <section className={page.section} aria-labelledby="settings-demo">
+          <h2 id="settings-demo" className={page.sectionTitle}>
+            Demo organisations
+          </h2>
+          <p className={page.note}>
+            Explore synthetic organisations of different sizes. No Google account and no backend needed.
+          </p>
+          <DemoEntry action="Try the demo" />
+        </section>
+      )}
       <section className={page.section} aria-labelledby="settings-licences">
         <h2 id="settings-licences" className={page.sectionTitle}>
           Licences

@@ -24,7 +24,7 @@ and where the data goes.
 | **As** | you: your own IAM roles | the instance's service account, after a gate checks that you can see the scope | nobody | you, when the file is read from Cloud Storage; nothing when you drop it in |
 | **Needs** | an instance with an OAuth client; `roles/cloudasset.viewer` on the scope and a quota project of yours | an instance with service-account mode on; the account granted `roles/cloudasset.viewer` on the scope; you can see the scope | nothing | the export file (to make one: `roles/cloudasset.viewer`) |
 | **Timeline** | the last 35 days, each day read when you stop on it | the same | the organisation's own 35 days, all at once | its own read time, as an extra tick of its scope |
-| **Start on the Connect page with** | "Sign in with Google", Read with › *Your account*, then "Pull now" | "Sign in with Google", Read with › *Service account*, then "Pull now" | "Try the demo" | "Load export" (or the Snapshots page's import) |
+| **Start on the Connect page with** | "Sign in with Google", Read with › *Your account*, then "Pull now" | "Sign in with Google", Read with › *Service account*, then "Pull now" | "Try the demo" (on the Settings page on a live instance) | "Load export" (or the Snapshots page's import) |
 | **Guide** | [permissions.md](permissions.md#2-with-your-own-account) | [permissions.md](permissions.md#3-through-the-instances-service-account) | [section 4](#4-the-demo) | [section 5](#5-export-files) |
 
 Whatever the way, the result is the same kind of snapshot, stored in your browser, drawn by the same code,
@@ -49,7 +49,7 @@ The default on any instance whose operator configured an OAuth client
    ([permissions.md](permissions.md#2-with-your-own-account) has what Google's consent screen says and why).
 2. **Pick a scope.** The scope picker searches the organisations, folders and projects your account can see,
    by name or id.
-3. **Check permissions** (on the Connect page's "Read your environment" or the Permissions page). The check
+3. **Check permissions** (in the Connect page's "Read your environment"). The check
    names each thing that is missing, with the exact `gcloud` command that grants it, and finds the *quota
    project* your requests are charged to.
 4. **Pull now.** The backend streams the scope's assets page by page to your browser; the diagram opens on the
@@ -87,14 +87,15 @@ Each is a synthetic organisation `example.com` (names and numbers chosen not to 
 `demo-web-1`, `demo-net-1`, …, numbers below 100000000000, documentation IP ranges) with a 35-day history of
 additions, removals and changes, from 4 September to 8 October 2026. It is generated in your browser (in a
 background worker), stored in your browser, and opened on the diagram; the timeline then moves through its 35
-days at once ([timeline.md](timeline.md)). The Snapshot menu also offers S, M and L directly, and a link opens
-one: `/diagram#snapshot=demo:M`. [packages/demo-data/README.md](../packages/demo-data/README.md) says what is
+days at once ([timeline.md](timeline.md)). While signed out (or in demo mode), the Snapshot menu also offers
+S, M and L directly, and a link opens one: `/diagram#snapshot=demo:M`.
+[packages/demo-data/README.md](../packages/demo-data/README.md) says what is
 modelled: folders, Shared VPC, load balancers, GKE, Cloud Run, data, keys, a perimeter, an App Hub
 application, and edge cases such as an empty project.
 
 The demo runs in four places:
 
-- **on any instance**, next to sign-in and export files;
+- **on any instance**, on the Settings page while signed out;
 - **on a demo-only instance** of your own: the image with `DEMO_ONLY=true`. It has no sign-in and no route
   that calls Google, and stores nothing on its server; its Connect page offers the demo, a link to deploy
   gcportrait to your own Google Cloud project, and its operator's legal pages if it has any

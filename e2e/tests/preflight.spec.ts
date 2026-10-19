@@ -200,7 +200,7 @@ async function stubBackend(page: Page): Promise<BackendLog> {
 }
 
 async function signIn(page: Page): Promise<void> {
-  await checkSection(page).getByRole('button', { name: 'Sign in with Google' }).click();
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
   await expect(checkSection(page).getByRole('combobox', { name: 'Scope' })).toBeVisible();
 }
 
@@ -210,7 +210,7 @@ async function openSignedIn(
   const log = await stubBackend(page);
   const google = await stubGoogle(page, { tokens: [TOKEN] });
   await page.goto('/permissions');
-  await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Connect' })).toBeVisible();
   await signIn(page);
   return { log, google };
 }
@@ -312,7 +312,7 @@ for (const scheme of ['light', 'dark'] as const) {
       await stubGoogle(page, { tokens: [TOKEN] });
       await page.goto('/permissions');
       await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
-      await expect(checkSection(page).getByRole('button', { name: 'Sign in with Google' })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeEnabled();
       await expectNoAxeViolations(page);
 
       await signIn(page);

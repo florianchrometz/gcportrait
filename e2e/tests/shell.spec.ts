@@ -164,20 +164,21 @@ test('the top bar shows the brand mark beside the wordmark: brand/icon.svg from 
       .poll(() => mark.evaluate((image: HTMLImageElement) => image.naturalWidth))
       .toBeGreaterThan(0);
     // A 24-pixel square, centred on the wordmark's line, before the name with the website header's gap (0.6rem),
-    // inside the link.
+    // inside the link, with "gc" in the primary blue and "portrait" in the surface text colour.
     const geometry = await mark.evaluate((image) => {
       const box = image.getBoundingClientRect();
-      const name = [...(image.parentElement?.childNodes ?? [])].find(
-        (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
-      );
+      const name = image.nextElementSibling;
+      const gc = name?.firstElementChild ?? null;
       const range = document.createRange();
-      if (name !== undefined) range.selectNodeContents(name);
+      if (name !== null) range.selectNodeContents(name);
       const text = range.getBoundingClientRect();
       const rem = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
       return {
         box: { top: box.top, right: box.right, width: box.width, height: box.height },
         text: { left: text.left, top: text.top, bottom: text.bottom },
         rem,
+        gcColor: gc === null ? '' : getComputedStyle(gc).color,
+        nameColor: name === null ? '' : getComputedStyle(name).color,
       };
     });
     expect(geometry.box.width).toBeCloseTo(24, 1);
@@ -186,6 +187,8 @@ test('the top bar shows the brand mark beside the wordmark: brand/icon.svg from 
     const nameMiddle = (geometry.text.top + geometry.text.bottom) / 2;
     expect(Math.abs(markMiddle - nameMiddle)).toBeLessThanOrEqual(1);
     expect(geometry.text.left - geometry.box.right).toBeCloseTo(0.6 * geometry.rem, 0);
+    expect(geometry.gcColor).toBe(scheme === 'light' ? 'rgb(26, 115, 232)' : 'rgb(138, 180, 248)');
+    expect(geometry.nameColor).toBe(scheme === 'light' ? 'rgb(32, 33, 36)' : 'rgb(232, 234, 237)');
     const markBox = await boxOf(mark);
     expect(inside(markBox, await boxOf(home))).toBe(true);
     // The file draws itself in the colour scheme's tints: the project zone's fill, light or dark.

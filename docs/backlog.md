@@ -68,8 +68,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 
 - **To verify on a real instance:** `deploy.sh --iap` with user mode, sign-in, a pull
   ([AGENTS.md](../AGENTS.md), "Security and privacy", "Tokens"); `infra/uninstall.sh --disable-apis`, and APIs
-  enabled by a stopped run are never labelled, so `--disable-apis` keeps them (`API_LABELS`); the "Open in
-  Cloud Shell" tutorial and the "Run on Google Cloud" button clicked through.
+  enabled by a stopped run are never labelled, so `--disable-apis` keeps them (`API_LABELS`).
 - **Record the consent screen** of a real sign-in: its wording for each scope, whether Google's Data Access
   page lists `cloudasset` as sensitive or restricted, and which consumer a header-less Resource Manager call
   names with the instance's own token (cai-ingestion skill §9, "The quota project" and "OAuth scopes").

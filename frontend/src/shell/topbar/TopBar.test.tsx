@@ -50,7 +50,6 @@ describe('TopBar', WHOLE_APP_TIMEOUT, () => {
       'a:Connect',
       'a:Diagram',
       'a:Snapshots',
-      'a:Permissions',
       'a:Settings',
       'button:Snapshot',
       'button:Saved views',
@@ -148,6 +147,16 @@ describe('the brand mark', WHOLE_APP_TIMEOUT, () => {
     stubBackend();
     renderApp('/settings', { demoConfig: staticDemoConfig(), snapshots: fakeLibrary() });
     expect(mark().getAttribute('src')).toBe('/demo/favicon.svg');
+  });
+
+  it('renders the "gc" prefix in its own accent span followed by "portrait"', () => {
+    renderApp('/');
+    const image = mark();
+    const label = image.nextElementSibling;
+    expect(label?.tagName).toBe('SPAN');
+    expect(label?.textContent).toBe('gcportrait');
+    expect(label?.firstElementChild?.tagName).toBe('SPAN');
+    expect(label?.firstElementChild?.textContent).toBe('gc');
   });
 });
 

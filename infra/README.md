@@ -36,9 +36,8 @@ commands deploy.sh prints at its end name the scripts by their path from the dir
 | `deploy.sh` | Deploys an instance: APIs, the backend's service account (no roles), the image, the Cloud Run service, optionally Identity-Aware Proxy, a domain mapping and legal pages; then checks it and prints the next steps. Declarative and idempotent; `--dry-run` prints every change. |
 | `uninstall.sh` | Removes exactly what `deploy.sh` created, found by its marks. |
 | `common.sh` | Sourced by the scripts: names, marks, the published image, the remote repository, shared checks and helpers. |
-| `Dockerfile` | The production image: the SPA and the backend bundled into one file on a distroless Node base, as a non-root user. Built by `deploy.sh --build` in a clone (through `cloudbuild.yaml`), by the release workflow (`.github/workflows/release.yml`, for linux/amd64 and linux/arm64) and by the Cloud Run Button (`app.json` at the repository root). Not part of a release's deploy scripts. |
+| `Dockerfile` | The production image: the SPA and the backend bundled into one file on a distroless Node base, as a non-root user. Built by `deploy.sh --build` in a clone (through `cloudbuild.yaml`) and by the release workflow (`.github/workflows/release.yml`, for linux/amd64 and linux/arm64). Not part of a release's deploy scripts. |
 | `cloudbuild.yaml` | The Cloud Build configuration of `deploy.sh --build`. |
-| `cloud-run-button.sh` | The Cloud Run Button's `postcreate` hook (`app.json`): the settings the button cannot set, and the next steps. |
 | `compose.yaml` | Runs an image of your checkout on your machine (`pnpm docker:build`, then `pnpm docker:run`). |
 
 ## Where the image comes from
@@ -54,8 +53,6 @@ commands deploy.sh prints at its end name the scripts by their path from the dir
 - **Your checkout.** In a clone of the repository, `deploy.sh --build` uploads the checkout and builds
   `Dockerfile` with Cloud Build in your project, into a repository and with a build account of the instance's
   own.
-- **The Cloud Run Button.** Builds `Dockerfile` in Cloud Shell and deploys it with the button's defaults; the
-  hook adds the rest. The self-hosting options' "Run on Google Cloud" lists its limits.
 
 ## Checking a change
 
@@ -65,8 +62,6 @@ pnpm test:infra              # the scripts and the installer against stand-ins f
 ```
 
 `scripts/infra.test.ts` and the tests beside it run the scripts end to end with bash against stand-ins that
-answer from a rule list and log every call, so nothing reaches Google; they also run every command of
-`docs/cloudshell-tutorial.md`. `scripts/infra-install.test.ts` runs the installer against the deploy scripts
-`scripts/release-assets.sh` packs, as a release attaches them, served from a local folder in place of GitHub.
-`scripts/cloud-run-button.test.ts` checks `app.json` against the Cloud Run Button's file format. Never run the
-scripts against a project you do not own.
+answer from a rule list and log every call, so nothing reaches Google. `scripts/infra-install.test.ts` runs
+the installer against the deploy scripts `scripts/release-assets.sh` packs, as a release attaches them, served
+from a local folder in place of GitHub. Never run the scripts against a project you do not own.

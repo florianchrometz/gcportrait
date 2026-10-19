@@ -17,4 +17,11 @@ describe('the Settings page’s licences', () => {
     expect(section.textContent).toContain('The gcportrait name and icon are not covered by it.');
     expect(within(section).queryByRole('link', { name: 'notice' })).toBeNull();
   });
+
+  it('offers Demo organisations on the Settings page when signed out', () => {
+    renderApp('/settings');
+    const demo = screen.getByRole('region', { name: 'Demo organisations' });
+    expect(within(demo).getByRole('radiogroup', { name: 'Size' })).toBeDefined();
+    expect(within(demo).getByRole('button', { name: 'Try the demo' })).toBeDefined();
+  });
 });

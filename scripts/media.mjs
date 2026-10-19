@@ -1036,6 +1036,7 @@ html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
 body { font-family: Card, sans-serif; background: #f8f9fa; color: #202124; position: relative; }
 .text { position: absolute; left: 64px; top: 64px; width: 470px; }
 .mark { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 500; }
+.mark .gc { color: #1a73e8; }
 .mark svg { width: 44px; height: 44px; }
 h1 { font-size: 46px; line-height: 1.15; font-weight: 500; margin: 56px 0 0; letter-spacing: -0.01em; }
 .host { position: absolute; left: 64px; bottom: 56px; font-size: 24px; color: #185abc; font-weight: 500; }
@@ -1043,7 +1044,7 @@ h1 { font-size: 46px; line-height: 1.15; font-weight: 500; margin: 56px 0 0; let
   border: 1px solid #dadce0; box-shadow: 0 2px 6px rgba(60,64,67,.15), 0 8px 28px rgba(60,64,67,.18); background: #fff; }
 .shot img { width: 720px; height: 450px; object-fit: cover; object-position: left top; display: block; }
 </style>
-<div class="text"><div class="mark">${MARK_SVG}<span>gcportrait</span></div><h1>${escape(heading)}</h1></div>
+<div class="text"><div class="mark">${MARK_SVG}<span><span class="gc">gc</span>portrait</span></div><h1>${escape(heading)}</h1></div>
 <div class="host">gcportrait.app</div>
 <div class="shot"><img src="${stillDataUrl}" alt=""></div>`;
 }

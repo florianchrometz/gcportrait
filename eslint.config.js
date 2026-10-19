@@ -158,6 +158,7 @@ export default defineConfig(
       'e2e/test-results/',
       'e2e/playwright-report/',
       'e2e/blob-report/',
+      '.worktrees/',
       ...ASSISTANT_DIR_NAMES.map((name) => `${name}/`),
     ],
     'gcportrait/ignores',

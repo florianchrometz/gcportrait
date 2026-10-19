@@ -63,7 +63,9 @@ export function ImportStatus({
           {failure.advice === undefined ? null : <p>{failure.advice}</p>}
           {failure.command === undefined ? null : <code className={styles.command}>{failure.command}</code>}
           <div className={styles.row}>
-            {failure.checkPermissions === true ? <Link to="/permissions">Check permissions</Link> : null}
+            {failure.checkPermissions === true ? (
+              <Link to="/#permissions-check">Check permissions</Link>
+            ) : null}
             {failure.retryable === true && onRetry !== undefined ? (
               <button type="button" className={controls.control} onClick={onRetry}>
                 Try again

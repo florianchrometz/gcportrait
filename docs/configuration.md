@@ -20,7 +20,6 @@ scripts' `--help` and the build's variables (`node scripts/user-docs.mjs`).
 | [Names and labels](#names-and-labels) | The resources deploy.sh creates, and how uninstall.sh recognises them. |
 | [The image](#the-image) | Build arguments, environment, files, user, port, health. |
 | [Local runs with compose](#local-runs-with-compose) | `infra/compose.yaml`'s variables. |
-| [Cloud Run Button](#cloud-run-button) | What `app.json` asks for and what its hook sets. |
 | [Release workflow](#release-workflow) | What `release.yml` publishes; it needs no secret and no variable. |
 | [SPA build](#spa-build) | Build-time variables of the frontend. |
 
@@ -41,7 +40,7 @@ never its value.
 | `SA_MODE_STRICT_EXPOSURE` | `false` | `true` adds the exposure check to the service-account gate: a scope whose details the account can read itself is refused (backend/README.md, "Service-account mode"). Any value other than `true`, `false` or unset stops start-up, so a typo never leaves the check off unnoticed. |
 | `SA_MODE_AUDIT_KEY` | unset | Secret key for HMAC-SHA256 caller email hashing in the service-account gate's audit log lines (backend/AGENTS.md, "The service-account gate"). When unset, plain SHA-256 is used. Plain text on one line without control characters. |
 | `SA_MODE_CALLERS` | unset | Comma- or whitespace-separated list of allowed caller email addresses or domains for organisation scopes in service-account mode (e.g. `alice@example.com, example.com, @example.org`). When unset or empty, organisation scopes are refused. Folders and projects do not require this setting. |
-| `BACKEND_SA_EMAIL` | unset | The account customers grant `roles/cloudasset.viewer` to, shown on the Permissions page (`backendServiceAccount` in `/api/config`). With service-account mode on it must be the account the credentials resolve to, which fills it in when unset. |
+| `BACKEND_SA_EMAIL` | unset | The account customers grant `roles/cloudasset.viewer` to, shown on the Connect page (`backendServiceAccount` in `/api/config`). With service-account mode on it must be the account the credentials resolve to, which fills it in when unset. |
 | `HOSTED_BY` | unset | Who runs the instance, shown before sign-in as "Hosted by NAME." (`hostedBy` in `/api/config`, `null` when unset). Plain text on one line, at most 80 characters, without `<` or `>`, never naming Google. |
 | `STATIC_DIR` | `../frontend/dist` from the backend package | The built SPA; served when it contains `index.html`. The image sets `/app/frontend/dist`. |
 | `TRUST_PROXY_HOPS` | `0` | Reverse-proxy hops whose `X-Forwarded-For` is trusted for the client address (rate limiting). `1` behind Cloud Run's front end; `0` wherever clients can reach the process directly. |
@@ -232,7 +231,7 @@ sources).
 
 | | |
 |---|---|
-| Build arguments | `APP_VERSION` (default `dev`; the release workflow passes the tag, or `dev-SHA` when run by hand, `deploy.sh --build` the output of `git describe`, the Cloud Run Button's hook `git describe --tags --always`) |
+| Build arguments | `APP_VERSION` (default `dev`; the release workflow passes the tag, or `dev-SHA` when run by hand, `deploy.sh --build` the output of `git describe`) |
 | Base images | `node:22.23.3-bookworm-slim` (build stage) and `gcr.io/distroless/nodejs22-debian12:nonroot` (runtime), both pinned by digest on literal `FROM` lines, which Dependabot keeps up to date (`.github/dependabot.yml`) |
 | Environment | `NODE_ENV=production`, `PORT=8080`, `STATIC_DIR=/app/frontend/dist`, `APP_VERSION` from the build argument |
 | Files | `/app/backend/dist/server.mjs` (the backend and its npm dependencies bundled by `backend/bundle.ts`), its source map, `/app/backend/dist/render-worker.mjs` and its map (the render API's worker, started per render: [api.md](api.md#post-apirender)), `/app/backend/dist/render-assets/` (resvg's WebAssembly module and the Roboto faces it draws with, with their licences), `/app/backend/dist/licenses/server-dependencies.txt`, `/app/backend/package.json`, `/app/frontend/dist/` (the SPA with its `licenses/`, `THIRD_PARTY_NOTICES.txt` among them: every third-party package in the app and the server with its notices, served at `/licenses/THIRD_PARTY_NOTICES.txt`; the build fails without it), `/app/LICENSE` (Apache-2.0, with its note on the gcportrait name and icon), `/app/NOTICE`, `/app/brand/LICENSE.md`, `/app/THIRD_PARTY.md` |
@@ -256,29 +255,6 @@ sources).
 
 Fixed: `SA_MODE_ENABLED=false` (the container has no service-account identity), `TRUST_PROXY_HOPS=0`,
 read-only root filesystem, all capabilities dropped, `no-new-privileges`.
-
-## Cloud Run Button
-
-The "Run on Google Cloud" button ([self-host-options.md, "Run on Google
-Cloud"](self-host-options.md#run-on-google-cloud)) reads `app.json` at the repository root. It asks for two
-variables and deploys with fixed options; its `postcreate` hook, `infra/cloud-run-button.sh`, then adds what
-the button cannot set.
-
-| Item | Value |
-|---|---|
-| Asked: `OAUTH_CLIENT_ID` | default `none` (the button does not accept an empty answer); the hook removes it while it is `none` |
-| Asked: `SA_MODE_ENABLED` | default `false` |
-| Options of `app.json` | public (`allow-unauthenticated`), 1 CPU, 2 GiB (the render API's default limits fit it), port 8080, 80 concurrent requests, at most 10 instances; the image is built from `infra/Dockerfile` in Cloud Shell (`prebuild` hook, `APP_VERSION` from `git describe --tags --always`) |
-| Set by the hook | `TRUST_PROXY_HOPS=1`, request timeout 900 s, startup CPU boost, at most 10 instances (the button's own setting does not apply), the startup and liveness probes on `GET /healthz` |
-| The hook reads | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_REGION`, `K_SERVICE`, `SERVICE_URL` (the button sets them), and `OAUTH_CLIENT_ID` |
-
-The service runs as the project's Compute Engine default service account and carries no `managed-by` label, so
-deploy.sh and uninstall.sh leave it alone. Run against the same project and region, deploy.sh first enables
-whichever of the APIs it needs are still off (the hook enables none), then stops before it creates or deploys
-anything. It prints the `gcloud run services update … --update-labels=managed-by=gcportrait-deploy` command
-that hands the service over and, when it enabled APIs, the `gcloud services disable …` command for them in
-case you give up instead. Once you have run the hand-over command yourself, deploy.sh manages the service
-([self-host-options.md, "Run on Google Cloud"](self-host-options.md#run-on-google-cloud)).
 
 ## Release workflow
 

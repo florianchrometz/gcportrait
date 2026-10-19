@@ -102,7 +102,7 @@ function checkSection(): HTMLElement {
 
 async function signIn(gis: FakeGis): Promise<void> {
   const button = await waitFor(() => {
-    const found = within(checkSection()).getByRole('button', { name: 'Sign in with Google' });
+    const found = screen.getByRole('button', { name: 'Sign in with Google' });
     expect(found.getAttribute('aria-disabled')).toBeNull();
     return found;
   });
@@ -144,10 +144,10 @@ afterEach(() => {
 });
 
 describe('the Permissions page, signed out', WHOLE_APP_TIMEOUT, () => {
-  it('offers sign-in, the reference with placeholders, the service account and the gate, and the short non-affiliation line', async () => {
+  it('redirects /permissions to / and offers sign-in, the reference with placeholders, the service account and the gate, and the short non-affiliation line', async () => {
     live();
     renderApp('/permissions', { demoConfig: null });
-    await within(checkSection()).findByRole('button', { name: 'Sign in with Google' });
+    await screen.findByRole('button', { name: 'Sign in with Google' });
     const reference = screen.getByRole('region', { name: 'What each mode needs' });
     // Signed out, nothing is known: the variables are empty fields (their tokens as placeholders) to fill in place.
     const [binding] = within(reference)
@@ -168,8 +168,6 @@ describe('the Permissions page, signed out', WHOLE_APP_TIMEOUT, () => {
     await within(sa).findByText(ACCOUNT_EMAIL);
     expect(within(sa).getByText(/The gate\./)).toBeDefined();
     expect(within(sa).getByText(/Grant the account roles\/cloudasset.viewer only/)).toBeDefined();
-    // The non-affiliation statement is the footer's alone (footers and long-form texts); the page has none.
-    expect(screen.getByRole('main').textContent).not.toMatch(/affiliated/i);
     expect(screen.getByRole('contentinfo').textContent).toContain(FOOTER_NOTICE);
     await expectNoAxeViolations();
   });

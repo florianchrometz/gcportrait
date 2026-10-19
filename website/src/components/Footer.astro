@@ -29,7 +29,7 @@ const releasesSite = new URL(RELEASES_URL).host;
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a class="wordmark" href="/"><Logo size={26} /><span>{PRODUCT_NAME}</span></a>
+        <a class="wordmark" href="/"><Logo size={26} /><span><span class="wordmark-gc">{PRODUCT_NAME.slice(0, 2)}</span>{PRODUCT_NAME.slice(2)}</span></a>
         <p class="muted">A portrait of your Google Cloud environment.</p>
       </div>
       <nav aria-label="Product">
@@ -103,6 +103,9 @@ const releasesSite = new URL(RELEASES_URL).host;
     font-size: 1.25rem;
     font-weight: 500;
     text-decoration: none;
+  }
+  .wordmark-gc {
+    color: var(--color-link);
   }
   .footer-brand p {
     margin-top: 0.5rem;

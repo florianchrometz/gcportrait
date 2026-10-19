@@ -57,6 +57,7 @@ export const ASSISTANT_FILE_NAMES = Object.freeze([
  */
 export const SKIPPED_DIR_NAMES = Object.freeze([
   '.git',
+  '.worktrees',
   'node_modules',
   '.pnpm-store',
   'coverage',
@@ -408,6 +409,7 @@ function listGitFiles(root) {
           .split('/')
           .some(
             (name) =>
+              name === '.worktrees' ||
               ASSISTANT_DIR_NAMES.includes(name) ||
               ASSISTANT_FILE_NAMES.includes(name) ||
               ((name === '.env' || name.startsWith('.env.')) && name !== '.env.example'),

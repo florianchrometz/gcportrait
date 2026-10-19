@@ -16,11 +16,6 @@ These rules add to the root AGENTS.md, which applies here too.
   and judge an open-source project by who stands behind it. `pnpm website:check` enforces all of it
   ([docs/website.md](../docs/website.md)).
 
-- The "Open in Cloud Shell" tutorial and "Run on Google Cloud" button sit beside "Self-host" on the
-  website's landing page, where they open a new tab that their name announces and draw a mark of the site's
-  own (the site loads nothing from another host). Their other placements follow
-  [AGENTS.md](../AGENTS.md), "Modes and hosting".
-
 The metadata's non-affiliation rule is in [AGENTS.md](../AGENTS.md), "Non-affiliation, brand and legal".
 
 ## The static demo

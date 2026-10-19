@@ -38,7 +38,7 @@
 #
 #   e2e      runs unless every code file is one the suites never read: scripts/, website/, infra/, docs/,
 #            .agents/, .github/ and the root's lint, format, editor, Docker and git settings
-#            (eslint.config.js, .prettierrc, .prettierignore, .editorconfig, .dockerignore, .gitignore, app.json).
+#            (eslint.config.js, .prettierrc, .prettierignore, .editorconfig, .dockerignore, .gitignore).
 #   layout   (layout-budget) runs when a code file is one it reads: the layout and the packages it is tested
 #            with or that the catalog's build reads (model, catalog, demo-data, graph, ingest, icons),
 #            frontend/package.json (the fonts its metrics come from) or any file at the root.
@@ -109,7 +109,7 @@ jobs:
           # How the three gated jobs run: a change here runs each of them.
           RUNNER: '^\.github/(actions/(setup|playwright)/|workflows/pr\.yml$)'
           E2E_UNREAD: '^(scripts|website|infra|docs|\.agents|\.github)/'
-          E2E_UNREAD_ROOT: '^(eslint\.config\.js|\.(prettierrc|prettierignore|editorconfig|dockerignore|gitignore)|app\.json)$'
+          E2E_UNREAD_ROOT: '^(eslint\.config\.js|\.(prettierrc|prettierignore|editorconfig|dockerignore|gitignore))$'
           LAYOUT_READ: '^(packages/(layout|model|catalog|demo-data|graph|ingest|icons)/|frontend/package\.json$|[^/]+$)'
           WEBSITE_UNREAD: '^(backend|e2e|\.agents|\.github)/'
         run: |

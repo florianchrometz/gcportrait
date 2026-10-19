@@ -71,7 +71,7 @@ export function ModeSelector({ disabled }: { readonly disabled?: string | undefi
             Anyone who can see a scope and sign in here can read its whole inventory through this account.
             Grant it <span className={styles.code}>roles/cloudasset.viewer</span> only, preferably on folders
             or projects rather than the whole organisation.{' '}
-            <Link to="/permissions">How service-account mode works</Link>
+            <Link to="/#permissions-sa">How service-account mode works</Link>
           </p>
         </div>
       )}

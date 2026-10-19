@@ -53,7 +53,9 @@ export function PullNow(): ReactElement {
               `${target.quotaProject === undefined ? '' : `; requests use the quota of ${target.quotaProject}`}. ` +
               'The diagram shows the inventory as of the pull.'}
         </span>
-        {'check' in readiness && !job.running ? <Link to="/permissions">Check permissions</Link> : null}
+        {'check' in readiness && !job.running ? (
+          <Link to="/#permissions-check">Check permissions</Link>
+        ) : null}
       </div>
       <ImportStatus
         progress={job.progress}

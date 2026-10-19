@@ -23,7 +23,7 @@ what they need to read a scope.
 | [Legal pages: link or serve](#legal-pages-link-or-serve) | An Impressum and a privacy notice: links to your own pages, or texts the instance serves. |
 | [The render API](#the-render-api) | Turning `POST /api/render` off, or changing its limits. |
 | [Updating, pinning and rolling back](#updating-pinning-and-rolling-back) | Image tags, releases, Cloud Run's revisions. |
-| [Building from source](#building-from-source) | The "Run on Google Cloud" button, `--build` from a clone, the image on your machine. |
+| [Building from source](#building-from-source) | `--build` from a clone, the image on your machine. |
 | [What deploy.sh does](#what-deploysh-does) | Every API, account, role and resource it touches, what it never does, and the roles you need to run it. |
 | [Uninstall in detail](#uninstall-in-detail) | What uninstall.sh deletes and keeps, and `--disable-apis`. |
 | [Costs](#costs), [Logs](#logs), [Troubleshooting](#troubleshooting) | |
@@ -271,7 +271,7 @@ In user mode (the default) every person reads what their own Google account may 
 a team grants the instance's backend account read access to a scope once, and people who can see that scope
 and sign in to the instance read it through the account. Deploy with `--sa-mode` (default: off); a scope's
 owner then grants the account `roles/cloudasset.viewer` on that scope, and nothing more. deploy.sh prints the
-account as "Service account" (`gcportrait-backend@` and the project's id), the app's Permissions page shows it
+account as "Service account" (`gcportrait-backend@` and the project's id), the app's Connect page shows it
 too, and [permissions.md, "The grant"](permissions.md#the-grant) has the commands for an organisation, a
 folder and a project.
 
@@ -477,51 +477,7 @@ commits since the previous release tag at every tag.
 ## Building from source
 
 The installer deploys a released image and needs no source. To deploy an image built from the source, a fork's
-or a modified version, use the button below or a clone of the repository.
-
-### Run on Google Cloud
-
-[![Run on Google Cloud](https://deploy.cloud.run/button.svg)](https://deploy.cloud.run/?git_repo=https://github.com/florianchrometz/gcportrait.git&revision=main)
-**Built from source, in the browser.** Google's [Cloud Run
-Button](https://github.com/GoogleCloudPlatform/cloud-run-button) opens Cloud Shell, clones this repository and
-follows `app.json` at its root:
-
-1. You choose a project (one with billing) and a region.
-2. It asks for two variables. `OAUTH_CLIENT_ID`: keep `none` until you have created the OAuth client (the
-   button does not accept an empty answer). `SA_MODE_ENABLED`: keep `false` (below).
-3. It builds `infra/Dockerfile` in Cloud Shell with `docker build` (the `prebuild` hook; the same build Cloud
-   Build runs for `deploy.sh --build`), pushes the image to the Artifact Registry repository
-   `cloud-run-source-deploy` in the region, and deploys the public service `gcportrait`: 1 CPU, 2 GiB, 80
-   concurrent requests, port 8080.
-4. Its `postcreate` hook, [`infra/cloud-run-button.sh`](../infra/cloud-run-button.sh), adds what the button
-   cannot set: `TRUST_PROXY_HOPS=1`, the 900 s request timeout, startup CPU boost, the `/healthz` probes and
-   at most 10 instances (`app.json` asks for that limit too, but the button writes it under a misspelt
-   annotation key, which Cloud Run does not apply); it removes `OAUTH_CLIENT_ID` when it is `none`, and prints
-   the OAuth client steps with the origin to add and the command that gives the service the client id, with
-   the region you chose (here `europe-west3`): `gcloud run services update gcportrait --project=YOUR_PROJECT
-   --region=europe-west3 --update-env-vars=OAUTH_CLIENT_ID=YOUR_OAUTH_CLIENT_ID`.
-
-Its limits, next to deploy.sh:
-
-- **It builds from source in Cloud Shell**, on every click, which takes several minutes on Cloud Shell's small
-  machine. It never deploys a released image; the installer does that without building anything.
-- **The service runs as the project's Compute Engine default service account**, not an account of its own. In
-  user mode that does not matter (every call uses the signed-in person's token). Service-account mode would
-  read as that account, which other workloads of the project may share and which may hold Editor on the
-  project: use `deploy.sh --sa-mode` for that.
-- **Nothing else is set**: no Identity-Aware Proxy, custom domain, legal pages, `HOSTED_BY` or `SOURCE_URL`,
-  and no `managed-by` label.
-- **deploy.sh and uninstall.sh leave the service alone**, because deploy.sh did not create it. To manage it
-  with them, run deploy.sh with the same project and region: it enables whichever of the APIs it needs are
-  still off, then stops before it creates or deploys anything and prints the one command that hands the
-  service over; after that it moves the service to an account of its own and keeps it up to date, and
-  uninstall.sh removes it. To remove it instead: `gcloud run services delete gcportrait --project=YOUR_PROJECT
-  --region=europe-west3` (with the region you chose), and its image from `cloud-run-source-deploy`.
-- **A second click updates the service** with a new build, and keeps the settings the hook added. It asks only
-  for variables the service does not have yet, so it asks for `OAUTH_CLIENT_ID` again until you have given the
-  service a client id (the hook removed the `none` placeholder): answer with the client id. The `postcreate`
-  hook does not run again, so a `none` given then stays set and sign-in fails; remove it with `gcloud run
-  services update gcportrait --project=YOUR_PROJECT --region=europe-west3 --remove-env-vars=OAUTH_CLIENT_ID`.
+or a modified version, use a clone of the repository.
 
 ### From a clone of the repository
 

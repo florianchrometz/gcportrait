@@ -115,9 +115,9 @@ test('signed in: the scope picked, the account and the service account are prefi
   await grantClipboard(context);
   await stubBackend(page);
   await stubGoogle(page, { tokens: [TOKEN] });
-  await page.goto('/permissions');
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
   const check = page.getByRole('region', { name: 'Check a scope' });
-  await check.getByRole('button', { name: 'Sign in with Google' }).click();
   await check.getByRole('combobox', { name: 'Scope' }).fill('web');
   await page.getByRole('option', { name: /Web shop/ }).click();
 

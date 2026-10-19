@@ -24,6 +24,7 @@ AGENTS.override.md
 .continue/
 /.github/copilot-instructions.md
 /.github/instructions/
+.worktrees/
 
 # Node / pnpm
 node_modules/

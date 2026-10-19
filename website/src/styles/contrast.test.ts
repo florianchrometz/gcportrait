@@ -49,6 +49,7 @@ const TEXT_PAIRS: readonly [string, string][] = [
   ['color-text-muted', 'color-code-bg'],
   ['color-link', 'color-bg'],
   ['color-link', 'color-bg-alt'],
+  ['color-primary', 'color-bg'],
   ['color-on-primary', 'color-primary'],
   ['color-text', 'color-tint-project'],
   ['color-text', 'color-tint-vpc'],
