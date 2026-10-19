@@ -95,7 +95,6 @@ export function TopBar(): ReactElement {
     { label: 'Connect', to: '/', end: true },
     { label: 'Diagram', to: diagramTarget },
     { label: 'Snapshots', to: '/snapshots' },
-    { label: 'Permissions', to: '/permissions' },
     { label: 'Settings', to: '/settings' },
   ];
 

@@ -13,7 +13,7 @@ Inventory, in one of three ways:
 - **from an export file** that you made with `gcloud asset export`, dropped into the browser or read from
   Cloud Storage.
 
-The app's Permissions page checks a scope for you and shows the exact commands for anything missing. This page
+The app's Connect page checks a scope for you and shows the exact commands for anything missing. This page
 explains the same rules in one place.
 [modes.md](modes.md) compares the three ways with the demo, which needs no permission at all.
 
@@ -31,7 +31,7 @@ explains the same rules in one place.
 
 `YOUR_SCOPE_ID` is the organisation number, the folder number or the project id. Use the command group of the
 scope's kind: `gcloud organizations`, `gcloud resource-manager folders` or `gcloud projects`. The commands
-below use an organisation; the Permissions page writes the right group and shows each value as a field to fill
+below use an organisation; the Connect page writes the right group and shows each value as a field to fill
 in place, prefilled with the scope, your email and the account when it knows them, one value per variable for
 every command on the page.
 
@@ -90,8 +90,8 @@ roles of their own.
 
 ### Which account, and who pays
 
-The instance publishes its account in `/api/config`; the Permissions page shows it in its "Service-account
-mode" section, and the Connect page names it when you pick "Service account". It is a service account of the
+The instance publishes its account in `/api/config`; the Connect page shows it in its "Service-account
+mode" section and names it when you pick "Service account". It is a service account of the
 instance (not a person), for example `gcportrait-backend@INSTANCE_PROJECT.iam.gserviceaccount.com`. Requests
 in this mode carry no quota project: the account's own project pays, which the self-host script makes the
 instance's project (it enables the Cloud Asset API there). You pick no quota project in this mode.
@@ -101,7 +101,7 @@ instance's project (it enables the Cloud Asset API there). You pick no quota pro
 Grant the account `roles/cloudasset.viewer` on the scope, and nothing else:
 
 ```sh
-# An organisation, a folder or a project; YOUR_SA_EMAIL is the account the Permissions page shows.
+# An organisation, a folder or a project; YOUR_SA_EMAIL is the account the Connect page shows.
 gcloud organizations add-iam-policy-binding YOUR_ORG_ID \
   --member="serviceAccount:YOUR_SA_EMAIL" --role="roles/cloudasset.viewer"
 gcloud resource-manager folders add-iam-policy-binding YOUR_FOLDER_ID \
@@ -142,12 +142,12 @@ Before the account reads a scope, the instance proves that **you** may see that 
    alone.
 2. **The account's token**, from the instance's own credentials.
 3. **The strict exposure check**, only where the instance's operator turned it on
-   (`SA_MODE_STRICT_EXPOSURE=true`; the Permissions page says whether it is on): the account must *not* be
+   (`SA_MODE_STRICT_EXPOSURE=true`; the Connect page says whether it is on): the account must *not* be
    able to read the scope's details on its own. Google's exact refusal of the account's `get` passes; anything
    else refuses.
 
 Only then does the account list the scope's assets. The gate runs before every request the account makes, the
-check on the Permissions page included. A pass is remembered for at most five minutes, in the instance's
+check on the Connect page included. A pass is remembered for at most five minutes, in the instance's
 memory, for your sign-in and that scope only (never for another sign-in, another scope, or past your token's
 own expiry, and never a refusal); a check that is refused ends a remembered pass for the same sign-in and
 scope at once. The gate cannot be switched off: an operator can only turn service-account mode off as a whole.
@@ -161,7 +161,7 @@ granted more than `roles/cloudasset.viewer` (Viewer, say), which is a common set
 `roles/cloudasset.viewer`, and only on scopes whose details are not public; operators who cannot rule out
 public scopes turn the strict check on.
 
-What the gate's answers mean (the Permissions page words them; the API returns them with a `code`):
+What the gate's answers mean (the Connect page words them; the API returns them with a `code`):
 
 | Answer | Code | Meaning | What to do |
 |---|---|---|---|
@@ -230,7 +230,7 @@ to the file as `operation.json`, gcportrait takes the export's exact read time f
 
 ## 6. Checking a scope
 
-Open the Permissions page (or the Connect page's "Read your environment" after sign-in), choose "Your account"
+On the Connect page's "Read your environment" (after sign-in), choose "Your account"
 or "Service account" under **Read with**, pick the scope (and, for your own account, a quota project), and
 press **Check permissions**. The answer is a headline and a checklist. Each item has a status (OK, Missing or
 Unknown), one sentence, the permission, the member and the resource it is about, Google's own answer when it

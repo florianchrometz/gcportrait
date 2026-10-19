@@ -62,7 +62,6 @@ const SIDEWAYS = [
 ] as const;
 const PAGES = [
   { path: '/', heading: 'Connect' },
-  { path: '/permissions', heading: 'Permissions' },
   { path: '/snapshots', heading: 'Snapshots' },
   { path: '/settings', heading: 'Settings' },
 ] as const;
@@ -1344,7 +1343,7 @@ test('the Snapshots page with a snapshot stored and a day cached: a card per row
 
 for (const theme of ['light', 'dark'] as const) {
   for (const size of [...SIZES, { width: 1024, height: 768 }]) {
-    test(`${theme} theme, ${String(size.width)} × ${String(size.height)}: a live instance's Connect page signed out and signed in, its Permissions page, and the Account panel inside More; Sign out closes the sheet`, async ({
+    test(`${theme} theme, ${String(size.width)} × ${String(size.height)}: a live instance's Connect page signed out and signed in, and the Account panel inside More; Sign out closes the sheet`, async ({
       page,
     }) => {
       const axeAtSize = theme === 'light' || size.width === 375 || size.width === 820;
@@ -1396,12 +1395,6 @@ for (const theme of ['light', 'dark'] as const) {
       await page.keyboard.press('Escape');
       await expect(panel).toBeHidden();
       await expect(account).toBeFocused();
-      // To the Permissions page in the app (the sign-in lives in this tab's memory only).
-      await more.getByRole('link', { name: 'Permissions', exact: true }).click();
-      await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
-      await expect(fold(page, 'More').sheet).toBeHidden();
-      await expectClean(page, 'the Permissions page, signed in', { axe: axeAtSize, focus: true });
-      await openSheet(page, 'More', 'click');
       await account.click();
       await panel.getByRole('button', { name: 'Sign out', exact: true }).click();
       await expect(fold(page, 'More').sheet).toBeHidden();

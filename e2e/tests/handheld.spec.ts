@@ -177,7 +177,7 @@ test.describe('by finger', { tag: ['@phone', '@tablet'] }, () => {
     await expect(fold(page, 'View').button).toBeFocused();
 
     const more = await openSheet(page, 'More');
-    for (const name of ['Connect', 'Diagram', 'Snapshots', 'Permissions', 'Settings']) {
+    for (const name of ['Connect', 'Diagram', 'Snapshots', 'Settings']) {
       const link = more.getByRole('link', { name, exact: true });
       await expect(link, name).toBeVisible();
       await expectTarget(link, name);

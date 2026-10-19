@@ -24,7 +24,6 @@ const ROUTES = [
   ['/', 'Connect'],
   ['/diagram', 'Diagram'],
   ['/snapshots', 'Snapshots'],
-  ['/permissions', 'Permissions'],
   ['/settings', 'Settings'],
   ['/no-such-page', 'Page not found'],
 ] as const;
@@ -41,6 +40,12 @@ describe('routing', () => {
     expect(screen.getByRole('main')).toBeDefined();
   });
 
+  it('redirects /permissions to /', () => {
+    const { container } = renderApp('/permissions');
+    expect(screen.getByRole('heading', { level: 1, name: 'Connect' })).toBeDefined();
+    expect(currentLocation(container)).toBe('/');
+  });
+
   it('marks the current page in the primary navigation', () => {
     renderApp('/settings');
     const nav = screen.getByRole('navigation', { name: 'Primary' });
@@ -51,9 +56,9 @@ describe('routing', () => {
   it('navigates with the primary navigation', async () => {
     const { container } = renderApp('/');
     const nav = screen.getByRole('navigation', { name: 'Primary' });
-    await userEvent.click(within(nav).getByRole('link', { name: 'Permissions' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Permissions' })).toBeDefined();
-    expect(currentLocation(container)).toBe('/permissions');
+    await userEvent.click(within(nav).getByRole('link', { name: 'Settings' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Settings' })).toBeDefined();
+    expect(currentLocation(container)).toBe('/settings');
   });
 
   it('sets the document title per page', () => {

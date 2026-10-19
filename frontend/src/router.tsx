@@ -531,3 +531,19 @@ export const NavLink = forwardRef<HTMLAnchorElement, NavLinkProps>(function NavL
     </Link>
   );
 });
+
+export function Navigate({
+  to,
+  replace = false,
+}: {
+  readonly to: To;
+  readonly replace?: boolean | undefined;
+}): null {
+  const navigate = useNavigate();
+  const { hash } = useLocation();
+  useEffect(() => {
+    const target = typeof to === 'string' && !to.includes('#') && hash ? `${to}${hash}` : to;
+    navigate(target, { replace });
+  }, [navigate, to, replace, hash]);
+  return null;
+}

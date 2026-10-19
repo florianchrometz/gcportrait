@@ -67,6 +67,7 @@ export function DiagramPage() {
   const [overlays] = usePreference('diagramOverlays', true);
   const { setExportSource } = useDiagramSession();
   const extras = useAppState((state) => state.timeline.extras);
+  const sessionStatus = useAppState((state) => state.connect.session.status);
 
   const model = useMemo(
     () =>
@@ -133,19 +134,28 @@ export function DiagramPage() {
                 demo:XL) or a snapshot stored in this browser.
               </p>
             )}
-            <p className={styles.emptyText}>
-              Choose a snapshot from the Snapshot menu, load one from the <Link to="/">Connect</Link> page, or
-              open a demo organisation:
-            </p>
-            <ul className={styles.demoList}>
-              {DEMO_CHOICES.map((choice) => (
-                <li key={choice.size}>
-                  <Link to={{ pathname: DIAGRAM_PATH, hash: demoViewHash(choice.size, spec) }}>
-                    {choice.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {sessionStatus === 'signed-in' ? (
+              <p className={styles.emptyText}>
+                Choose a snapshot from the Snapshot menu, or pull a scope or load an export from the{' '}
+                <Link to="/">Connect</Link> page.
+              </p>
+            ) : (
+              <>
+                <p className={styles.emptyText}>
+                  Choose a snapshot from the Snapshot menu, load one from the <Link to="/">Connect</Link>{' '}
+                  page, or open a demo organisation:
+                </p>
+                <ul className={styles.demoList}>
+                  {DEMO_CHOICES.map((choice) => (
+                    <li key={choice.size}>
+                      <Link to={{ pathname: DIAGRAM_PATH, hash: demoViewHash(choice.size, spec) }}>
+                        {choice.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         ) : null}
         {model === null ? null : (

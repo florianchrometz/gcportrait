@@ -8,14 +8,16 @@ import { NON_AFFILIATION_LONG } from '../branding';
 import { cx } from '../classNames';
 import { useDemoOnly, useLegalPages } from '../demoOnly';
 import { LoadExport } from '../import/LoadExport';
+import { PullNow } from '../import/PullNow';
 import { legalTarget } from '../legal/api';
 import { LegalPageLink } from '../legal/LegalLinks';
-import { PullNow } from '../import/PullNow';
+import { PermissionsReference, ServiceAccountExplainer } from '../preflight/PermissionsGuide';
+import { PreflightPanel } from '../preflight/PreflightPanel';
+import { SELF_HOST_GUIDE_URL } from '../projectSite';
 import { ScopeStep } from '../scope/ScopeStep';
 import { DemoEntry } from '../snapshots/DemoEntry';
 import { useAppState } from '../state';
 import controls from '../ui/controls.module.css';
-import { SELF_HOST_GUIDE_URL } from '../projectSite';
 import styles from './ConnectPage.module.css';
 import page from './Page.module.css';
 import { useDocumentTitle } from './useDocumentTitle';
@@ -49,26 +51,25 @@ const EXPORT_SOURCE: Source = {
   action: 'Load export',
 };
 
-/** The export card comes last and spans the row: its panel needs the room. */
-const LIVE_SOURCES: readonly Source[] = [SIGN_IN_SOURCE, DEMO_SOURCE, EXPORT_SOURCE];
-
 /**
- * The start page: where a diagram's data comes from, plus the About block with the non-affiliation statement.
- * "Try the demo" (snapshots/DemoEntry.tsx); "Sign in with Google" (auth/SignInCard.tsx), after which
- * the "Read your environment" section offers the mode (auth/ModeSelector.tsx), the scope and "Pull now".
+ * The start page: where a diagram's data comes from, the guided environment and permission check flow, the
+ * permissions reference for each mode, plus the About block with the non-affiliation statement.
  *
  * Two variants: a demo-only instance (the backend's DEMO_ONLY, such as the maintainer's sign-in-free demo) and a demo
  * build (`pnpm dev:demo`, `pnpm demo:static`), which builds that configuration in, offer the demo organisations only,
  * the way to deploy gcportrait to one's own Google Cloud project and a note that the demo processes no personal data.
- * Live mode offers every source once the backend has answered; until then only the demo, which every variant has, so
- * the sources of the other variant never flash up while /api/config is on its way.
+ * Live mode offers Your Google Cloud environment (with its guided step-by-step flow after sign-in) and Cloud Asset
+ * Inventory export once the backend has answered; until then only the demo, which every variant has, so the sources
+ * of the other variant never flash up while /api/config is on its way.
  */
 export function ConnectPage() {
   const demoOnly = useDemoOnly();
-  const backendStatus = useAppState((state) => state.connect.backend.status);
+  const backend = useAppState((state) => state.connect.backend);
+  const scope = useAppState((state) => state.connect.scope);
   useDocumentTitle('Connect');
-  const deciding = backendStatus === 'loading';
-  const sources = demoOnly || deciding ? [DEMO_SOURCE] : LIVE_SOURCES;
+  const deciding = backend.status === 'loading';
+  const config = backend.status === 'ready' ? backend.config : null;
+  const serviceAccount = config?.saMode === true ? config.backendServiceAccount : null;
 
   return (
     <div className={page.page}>
@@ -84,32 +85,65 @@ export function ConnectPage() {
         <h2 id="connect-sources" className={page.sectionTitle}>
           {demoOnly ? 'Demo mode' : 'Choose a source'}
         </h2>
-        <ul className={styles.sources}>
-          {sources.map((source) => (
-            <li
-              key={source.id}
-              className={cx(
-                styles.source,
-                (sources.length === 1 || source.id === EXPORT_SOURCE.id) && styles.wideSource,
-              )}
-            >
-              <h3 className={styles.sourceTitle}>{source.title}</h3>
-              <p className={styles.sourceDescription}>{source.description}</p>
-              {source.id === DEMO_SOURCE.id ? (
-                <DemoEntry action={source.action} />
-              ) : source.id === SIGN_IN_SOURCE.id ? (
-                <SignInCard />
-              ) : (
-                <LoadExport />
-              )}
+        {demoOnly || deciding ? (
+          <ul className={styles.sources}>
+            <li className={cx(styles.source, styles.wideSource)}>
+              <h3 className={styles.sourceTitle}>{DEMO_SOURCE.title}</h3>
+              <p className={styles.sourceDescription}>{DEMO_SOURCE.description}</p>
+              <DemoEntry action={DEMO_SOURCE.action} />
             </li>
-          ))}
-        </ul>
+          </ul>
+        ) : (
+          <div className={styles.sourceStack}>
+            <ul className={styles.sources}>
+              <li className={cx(styles.source, styles.wideSource)}>
+                <h3 className={styles.sourceTitle}>{SIGN_IN_SOURCE.title}</h3>
+                <p className={styles.sourceDescription}>{SIGN_IN_SOURCE.description}</p>
+                <SignInCard />
+              </li>
+            </ul>
+            <Environment />
+            <ul className={styles.sources}>
+              <li className={cx(styles.source, styles.wideSource)}>
+                <h3 className={styles.sourceTitle}>{EXPORT_SOURCE.title}</h3>
+                <p className={styles.sourceDescription}>{EXPORT_SOURCE.description}</p>
+                <LoadExport />
+              </li>
+            </ul>
+          </div>
+        )}
       </section>
 
       {demoOnly ? <SelfHost /> : null}
       {demoOnly ? <DemoPrivacy /> : null}
-      {demoOnly || deciding ? null : <Environment />}
+
+      {demoOnly ? (
+        <p className={page.note}>
+          This instance is a demo: its organisations are made up in this browser, and it offers no sign-in, so
+          no scope can be checked here. Deployed to a Google Cloud project of yours, gcportrait checks a real
+          scope and shows the exact commands for anything missing.
+        </p>
+      ) : null}
+
+      <section className={page.section} aria-labelledby="permissions-reference">
+        <h2 id="permissions-reference" className={page.sectionTitle}>
+          What each mode needs
+        </h2>
+        <PermissionsReference scope={scope} serviceAccount={serviceAccount} />
+      </section>
+
+      <section className={page.section} aria-labelledby="permissions-sa">
+        <h2 id="permissions-sa" className={page.sectionTitle}>
+          Service-account mode
+        </h2>
+        <ServiceAccountExplainer
+          offered={config?.saMode === true}
+          serviceAccount={serviceAccount}
+          scope={scope?.scope ?? null}
+          strictExposure={config?.saMode === true && config.saStrictExposure}
+        />
+      </section>
+
       {demoOnly ? null : <BackendStatus />}
 
       <section className={cx(page.section, styles.about)} aria-labelledby="connect-about">
@@ -173,10 +207,10 @@ function DemoPrivacy() {
 }
 
 /**
- * After sign-in: read with which identity (the mode), which scope (scope/ScopeStep.tsx, also on the
- * Permissions page), then "Pull now" (import/PullNow.tsx); they coordinate through the app store's
- * `connect` slice only. Shown while signed in, and after an expiry with its controls inert. When a sign-in
- * completes, focus moves to this section's heading (the sign-in button that had it is gone).
+ * After sign-in: a guided step-by-step workflow to choose identity and scope (ModeSelector + ScopeStep),
+ * check and grant permissions inline (PreflightPanel), and pull the inventory (PullNow); they coordinate
+ * through the app store's `connect` slice only. Shown while signed in, and after an expiry with its controls
+ * inert. When a sign-in completes, focus moves to this section's heading (the sign-in button that had it is gone).
  */
 function Environment() {
   const status = useAppState((state) => state.connect.session.status);
@@ -191,14 +225,24 @@ function Environment() {
   if (status !== 'signed-in' && status !== 'expired') return null;
   const inert = status === 'expired' ? 'Sign in again first' : undefined;
   return (
-    <section className={page.section} aria-labelledby="connect-environment">
+    <section id="permissions-check" className={page.section} aria-labelledby="connect-environment">
       <h2 id="connect-environment" ref={headingRef} tabIndex={-1} className={page.sectionTitle}>
         Read your environment
       </h2>
-      <div className={styles.steps}>
-        <ModeSelector disabled={inert} />
-        <ScopeStep disabled={inert} />
-        <PullStep />
+      <div role="region" aria-label="Check a scope" className={styles.steps}>
+        <div className={styles.step}>
+          <p className={styles.stepLabel}>Step 1 · Choose identity and scope</p>
+          <ModeSelector disabled={inert} />
+          <ScopeStep disabled={inert} />
+        </div>
+        <div className={styles.step}>
+          <p className={styles.stepLabel}>Step 2 · Check and grant permissions</p>
+          <PreflightPanel />
+        </div>
+        <div className={styles.step}>
+          <p className={styles.stepLabel}>Step 3 · Pull inventory</p>
+          <PullStep />
+        </div>
       </div>
     </section>
   );

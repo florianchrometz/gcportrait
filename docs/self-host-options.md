@@ -271,7 +271,7 @@ In user mode (the default) every person reads what their own Google account may 
 a team grants the instance's backend account read access to a scope once, and people who can see that scope
 and sign in to the instance read it through the account. Deploy with `--sa-mode` (default: off); a scope's
 owner then grants the account `roles/cloudasset.viewer` on that scope, and nothing more. deploy.sh prints the
-account as "Service account" (`gcportrait-backend@` and the project's id), the app's Permissions page shows it
+account as "Service account" (`gcportrait-backend@` and the project's id), the app's Connect page shows it
 too, and [permissions.md, "The grant"](permissions.md#the-grant) has the commands for an organisation, a
 folder and a project.
 

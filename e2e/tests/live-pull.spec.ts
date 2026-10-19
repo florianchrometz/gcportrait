@@ -258,10 +258,10 @@ async function stubSignIn(page: Page): Promise<Awaited<ReturnType<typeof stubGoo
   return stubGoogle(page, { tokens: [TOKEN] });
 }
 
-/** Signs in on the Permissions page, picks the organisation and the quota project, and runs the check. */
+/** Signs in on the Connect page, picks the organisation and the quota project, and runs the check. */
 async function checkedScope(page: Page): Promise<void> {
-  await page.goto('/permissions');
-  await checkSection(page).getByRole('button', { name: 'Sign in with Google' }).click();
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in with Google' }).click();
   await choose(page, 'Scope', 'example', /example\.com/);
   await choose(page, 'Quota project', 'quota', /Quota/);
   await checkSection(page).getByRole('button', { name: 'Check permissions' }).click();
@@ -270,7 +270,6 @@ async function checkedScope(page: Page): Promise<void> {
       .getByText('Ready: everything gcportrait needs to read this scope is in place.')
       .first(),
   ).toBeVisible();
-  await primaryNav(page).getByRole('link', { name: 'Connect' }).click();
 }
 
 function exportCard(page: Page): Locator {
@@ -343,7 +342,8 @@ test('Pull now shows what Google refused and links the permission check; nothing
   await expect(alert).toContainText(message);
   await expect(page).toHaveURL(/\/$/);
   await alert.getByRole('link', { name: 'Check permissions' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Permissions' })).toBeVisible();
+  await expect(page).toHaveURL(/\/#permissions-check$/);
+  await expect(checkSection(page)).toBeVisible();
 });
 
 test('Cancel stops a pull that is still waiting, and stores nothing', async ({ page }) => {

@@ -31,7 +31,9 @@ export function AppShell() {
 
   useEffect(() => {
     if (shown.current === pathname) return;
+    const redirectedFromPermissions = shown.current === '/permissions' && pathname === '/';
     shown.current = pathname;
+    if (redirectedFromPermissions) return;
     const main = mainRef.current;
     if (main === null) return;
     // The page's own effects ran first (children before parents), so its title is set by now.

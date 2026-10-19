@@ -93,7 +93,7 @@ may use; the instance's project works for its Owner. Your own project is the sim
 gcloud projects add-iam-policy-binding YOUR_PROJECT --member="user:YOUR_EMAIL" --role="roles/cloudasset.viewer"
 ```
 
-The app's Permissions page shows the exact commands for any scope and account, and
+The app's Connect page shows the exact commands for any scope and account, and
 [permissions.md](permissions.md) explains each one. For a team that wants to grant read access once instead of
 to every person, see [Service-account mode](self-host-options.md#service-account-mode).
 

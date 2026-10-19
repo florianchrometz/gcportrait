@@ -110,13 +110,18 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
     const { gis } = live();
     renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
-    await userEvent.click(screen.getByRole('radio', { name: 'Service account' }));
-    expect(screen.getByRole('radio', { name: 'Service account' }).getAttribute('aria-checked')).toBe('true');
-    expect(screen.getByText('gcportrait-backend@example.com')).toBeDefined();
-    expect(screen.getByText(/before every read the backend checks that with your own sign-in/)).toBeDefined();
-    expect(screen.getByRole('link', { name: 'How service-account mode works' }).getAttribute('href')).toBe(
-      '/permissions',
+    const env = screen.getByRole('region', { name: 'Read your environment' });
+    await userEvent.click(within(env).getByRole('radio', { name: 'Service account' }));
+    expect(within(env).getByRole('radio', { name: 'Service account' }).getAttribute('aria-checked')).toBe(
+      'true',
     );
+    expect(within(env).getByText('gcportrait-backend@example.com')).toBeDefined();
+    expect(
+      within(env).getByText(/before every read the backend checks that with your own sign-in/),
+    ).toBeDefined();
+    expect(
+      within(env).getByRole('link', { name: 'How service-account mode works' }).getAttribute('href'),
+    ).toBe('/#permissions-sa');
     await expectNoAxeViolations();
   });
 
@@ -124,8 +129,9 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
     const { gis } = live({ ...CONFIG, saMode: false, backendServiceAccount: null });
     renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
     await signIn(gis);
-    expect(screen.queryByRole('radiogroup', { name: 'Read with' })).toBeNull();
-    expect(screen.getByText(/This instance does not offer service-account mode/)).toBeDefined();
+    const env = screen.getByRole('region', { name: 'Read your environment' });
+    expect(within(env).queryByRole('radiogroup', { name: 'Read with' })).toBeNull();
+    expect(within(env).getByText(/This instance does not offer service-account mode/)).toBeDefined();
   });
 
   it('signs out from the account menu: revokes the token and offers sign-in again', async () => {
@@ -234,6 +240,21 @@ describe('sign-in on the Connect page', WHOLE_APP_TIMEOUT, () => {
     await userEvent.click(button);
     expect(document.querySelector(`script[src="${GIS_SCRIPT_URL}"]`)).toBeNull();
     await expectNoAxeViolations();
+  });
+
+  it('hides demo organisations in Settings, the empty Diagram state and the Snapshot menu while signed in', async () => {
+    const { gis } = live();
+    renderApp('/', { demoConfig: null, snapshots: fakeLibrary() });
+    await signIn(gis);
+    const nav = screen.getByRole('navigation', { name: 'Primary' });
+    await userEvent.click(within(nav).getByRole('link', { name: 'Settings' }));
+    expect(screen.queryByRole('region', { name: 'Demo organisations' })).toBeNull();
+    await userEvent.click(within(nav).getByRole('link', { name: 'Diagram' }));
+    expect(screen.queryByRole('link', { name: 'Demo organisation S (small)' })).toBeNull();
+    const banner = screen.getByRole('banner');
+    await userEvent.click(within(banner).getByRole('button', { name: 'Snapshot' }));
+    const menu = within(banner).getByRole('menu', { name: 'Snapshot' });
+    expect(within(menu).queryByRole('menuitemradio', { name: 'Demo organisation S (small)' })).toBeNull();
   });
 });
 

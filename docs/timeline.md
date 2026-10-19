@@ -66,7 +66,7 @@ demand, as a "Pull now" reads the scope, but at that day's 00:00 UTC (`readTime`
 (UTC). Reading a day needs:
 
 - that you are signed in and the permission check, in either mode, is ready for the snapshot's scope: the same
-  check the Connect and Permissions pages run ([permissions.md](permissions.md)). Without it the readout says
+  check the Connect page runs ([permissions.md](permissions.md)). Without it the readout says
   what is missing, and only days already kept in this browser are drawn;
 - an instance that can reach Google Cloud. The demo-only build reads nothing; it draws the days it keeps.
 

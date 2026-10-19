@@ -74,8 +74,7 @@ test('the Connect page offers every source and reports the backend', async ({ pa
   const sources = page.getByRole('region', { name: 'Choose a source' });
   await expect(sources.getByRole('button')).toHaveText([
     'Sign in with Google',
-    'Try the demo',
-    // The export card's panel, last and across the row: files, Cloud Storage and the optional operation.json.
+    // The export card's panel, below and across the row: files, Cloud Storage and the optional operation.json.
     'Choose files…',
     'Read from Cloud Storage',
     'Add operation.json…',

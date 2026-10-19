@@ -50,7 +50,6 @@ describe('TopBar', WHOLE_APP_TIMEOUT, () => {
       'a:Connect',
       'a:Diagram',
       'a:Snapshots',
-      'a:Permissions',
       'a:Settings',
       'button:Snapshot',
       'button:Saved views',

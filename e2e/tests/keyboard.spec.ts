@@ -355,7 +355,6 @@ test('Tab goes through the skip links, the navigation, the app actions and the v
     'Connect',
     'Diagram',
     'Snapshots',
-    'Permissions',
     'Settings',
     'Snapshot',
     'Saved views',
@@ -582,7 +581,7 @@ for (const scheme of ['light', 'dark'] as const) {
     page,
   }) => {
     await page.emulateMedia({ colorScheme: scheme });
-    for (const path of ['/', '/snapshots', '/permissions', '/settings']) {
+    for (const path of ['/', '/snapshots', '/settings']) {
       await page.goto(path);
       await expect(page.locator('html')).toHaveAttribute('data-theme', scheme);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

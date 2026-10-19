@@ -214,20 +214,19 @@ describe('the Connect page of a live instance', () => {
         within(sources)
           .getAllByRole('heading', { level: 3 })
           .map((heading) => heading.textContent),
-      ).toEqual(['Your Google Cloud environment', 'Demo organisations', 'Cloud Asset Inventory export']);
+      ).toEqual(['Your Google Cloud environment', 'Cloud Asset Inventory export']);
     });
     expect(
       within(sources)
         .getAllByRole('heading', { level: 3 })
         .map((heading) => heading.closest('li')?.classList.contains(styles.wideSource ?? '')),
-    ).toEqual([false, false, true]);
+    ).toEqual([true, true]);
     expect(
       within(sources)
         .getAllByRole('button')
         .map((button) => button.textContent),
     ).toEqual([
       'Sign in with Google',
-      'Try the demo',
       // The export card's panel, last and across the row (import/LoadExport.tsx): files, Cloud Storage and the
       // optional sidecar.
       'Choose files…',
@@ -238,11 +237,7 @@ describe('the Connect page of a live instance', () => {
       'Copy',
       'Copy',
     ]);
-    // The demo card works here too, with its sizes.
-    expect(within(sources).getByRole('radiogroup', { name: 'Size' })).toBeDefined();
-    expect(
-      within(sources).getByRole('button', { name: 'Try the demo' }).getAttribute('aria-disabled'),
-    ).toBeNull();
+    expect(within(sources).queryByRole('radiogroup', { name: 'Size' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'Your own Google Cloud' })).toBeNull();
     expect(screen.queryByRole('region', { name: 'No personal data' })).toBeNull();
     expect(screen.queryByTestId('demo-badge')).toBeNull();
