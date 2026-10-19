@@ -89,7 +89,13 @@ for (const { copy, file } of LONG_FORM_DOCUMENTS) {
 const allMarkdownFiles = (dir: string = REPO): string[] => {
   const result: string[] = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.claude') continue;
+    if (
+      entry.name === 'node_modules' ||
+      entry.name === '.git' ||
+      entry.name === '.claude' ||
+      entry.name === '.worktrees'
+    )
+      continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       result.push(...allMarkdownFiles(full));

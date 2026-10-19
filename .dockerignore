@@ -12,6 +12,7 @@
 .git
 .github
 .claude
+.worktrees
 **/.DS_Store
 **/Thumbs.db
 

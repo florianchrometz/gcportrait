@@ -47,7 +47,7 @@ working one or more GitHub issues on a feature branch.
 - **Main checkout** (`work/<branch>`): use the main checkout when a task changes the app bundle
   (`frontend/src/`, `packages/*/src/` imported by the app, or `scripts/media*.mjs`), because `pnpm media`
   records the built frontend bundle hash in `docs/media/manifest.json`.
-- **Isolated worktree** (`.claude/worktrees/wt-<N>`): use a clean git worktree when running parallel tasks
+- **Isolated worktree** (`.worktrees/wt-<N>`): use a clean git worktree when running parallel tasks
   that touch non-bundle paths (`backend/`, `infra/`, `website/`, `e2e/`, `.github/`, `scripts/` outside media,
   `docs/`, catalog tooling, or `AGENTS.md`).
 - Keep every checkout and worktree free of untracked scratch files: `scripts/lib/repo-files.mjs` scans all

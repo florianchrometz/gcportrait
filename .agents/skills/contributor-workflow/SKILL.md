@@ -33,7 +33,7 @@ procedure and the checklists.
   [issue-worker skill](../issue-worker/SKILL.md)). The `main` branch is protected by ruleset `#25366182`:
   direct pushes are blocked; assistants create, commit to and push feature branches, while opening, reviewing
   and merging pull requests is manual maintainer work.
-- Use isolated worktrees (for example under `.claude/worktrees/wt-<N>`) when working tasks in parallel to
+- Use isolated worktrees (for example under `.worktrees/wt-<N>`) when working tasks in parallel to
   avoid cross-task pollution and uncommitted changes colliding. Keep worktrees clean: repository tooling
   (`scripts/lib/repo-files.mjs` via `listRepoFiles`) scans both cached and untracked files not matched by
   repository `.gitignore` files (`git ls-files --cached --others`). Unignored scratch or temporary files
