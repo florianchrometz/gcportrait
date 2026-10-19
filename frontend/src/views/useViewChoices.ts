@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react';
 
 import type { DataClient } from '../diagram/pipeline/dataClient';
 import { useDiagramSession } from '../diagram/session';
-import { selectDrawnDay, useAppState, type AppState } from '../state';
+import { selectDrawnDay, selectLoadedSnapshot, useAppState, type AppState } from '../state';
 import type { ViewChoices } from './choices';
 
 /** Snapshot days whose choices are kept per data client (the oldest asked goes first). */
@@ -50,13 +50,7 @@ export function choicesFor(
   return asked;
 }
 
-/** The view's snapshot once its Graph is built and drawn (`''` otherwise). */
-export function selectLoadedSnapshot(state: AppState): SnapshotRef {
-  const { snapshot } = state;
-  return state.view.onDiagram && snapshot.status === 'ready' && snapshot.source?.ref === snapshot.ref
-    ? snapshot.ref
-    : '';
-}
+export { selectLoadedSnapshot } from '../state';
 
 /** The view choices, or why there are none (the snapshot could not be loaded, or its choices not read). */
 export interface ViewChoicesState {

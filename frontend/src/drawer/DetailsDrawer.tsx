@@ -60,6 +60,7 @@ import {
   locateViewport,
   sceneKey,
   selectDrawnDay,
+  selectLoadedSnapshot,
   useAppState,
   useAppStore,
   useDiagramActions,
@@ -410,7 +411,8 @@ function focusCanvas(from: Element | null, id: string | null): void {
 export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }): ReactElement {
   const selection = useAppState((state) => state.selection.selected);
   const open = useAppState((state) => state.ui.drawerOpen);
-  const snapshot = useAppState((state) => state.view.spec.snapshot);
+  const snapshot = useAppState(selectLoadedSnapshot);
+  const specTick = useAppState((state) => state.view.spec.tick);
   const store = useAppStore();
   const actions = useDiagramActions();
   const { workers } = useDiagramSession();
@@ -427,11 +429,17 @@ export function DetailsDrawer({ model }: { readonly model: DiagramModel | null }
   const drawerId = useId();
   const titleId = useId();
   // The day drawn and, when it was compared with the day on screen before it, that diff.
-  const drawnDay = useAppState((state) => state.pipeline.result?.answer.source.tick);
-  const drawnReadTime = useAppState((state) => state.pipeline.result?.answer.source.readTime);
-  const diff = useAppState((state) => state.pipeline.result?.answer.diff);
+  const matchingResult = useAppState((state) => {
+    const loaded = selectLoadedSnapshot(state);
+    return loaded !== '' && state.pipeline.result?.answer.source.ref === loaded
+      ? state.pipeline.result
+      : null;
+  });
+  const drawnDay = matchingResult?.answer.source.tick;
+  const drawnReadTime = matchingResult?.answer.source.readTime;
+  const diff = matchingResult?.answer.diff;
   const visible = selection !== null && open;
-  const state = useNodeDetails(snapshot, drawnDay, visible ? selection : null);
+  const state = useNodeDetails(snapshot, drawnDay ?? specTick ?? null, visible ? selection : null);
   const details = state.status === 'ready' ? state.value : null;
   const asked = useNodeChanges(
     snapshot,

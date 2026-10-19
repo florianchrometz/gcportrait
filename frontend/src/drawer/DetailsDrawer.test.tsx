@@ -14,7 +14,9 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { describe, expect, it } from 'vitest';
 
 import { createInProcessWorkers } from '../diagram/pipeline/inProcess';
+import type { Layout } from '@gcportrait/layout';
 import { DataCancelledError } from '../diagram/pipeline/dataClient';
+import type { SceneAnswer } from '../diagram/pipeline/protocol';
 import type { DiagramWorkers } from '../diagram/pipeline/workers';
 import { DiagramSessionProvider } from '../diagram/session';
 import type { LocateAnswer, LocateQuery } from '../search/protocol';
@@ -45,6 +47,11 @@ async function delayedJumps() {
       hash: `#snapshot=demo:S&lens=compute&detail=folders&selection=${vm}`,
     },
   });
+  store.updateSnapshot((snap) => ({
+    ...snap,
+    status: 'ready',
+    source: { ref: 'demo:S', scope: 'demo-s', readTime: '2026-03-01T00:00:00Z', assets: 10 },
+  }));
   const requests: DelayedLocate[] = [];
   const factory = (): DiagramWorkers => {
     const workers = createInProcessWorkers();
@@ -515,5 +522,108 @@ describe('the details drawer', () => {
     });
     expect(decodeURIComponent(currentLocation(container))).toContain(`root=${project}`);
     expect(screen.queryByRole('complementary', { name: 'Details' })).toBeNull();
+  });
+
+  it('does not query worker details or changes for an unconfirmed large snapshot', () => {
+    const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+    const store = createAppStore({
+      location: {
+        pathname: '/diagram',
+        hash: `#snapshot=demo:XL&lens=compute&detail=folders&selection=${vm}`,
+      },
+    });
+    let askedDetails = 0;
+    let askedChanges = 0;
+    const factory = (): DiagramWorkers => {
+      const workers = createInProcessWorkers();
+      workers.data.details = () => {
+        askedDetails += 1;
+        return Promise.resolve(null);
+      };
+      workers.data.changes = () => {
+        askedChanges += 1;
+        return Promise.resolve(null);
+      };
+      return workers;
+    };
+    render(
+      <AppStoreContext value={store}>
+        <ThemeContext value={{ preference: 'light', resolved: 'light', setPreference: () => undefined }}>
+          <DiagramSessionProvider factory={factory}>
+            <DetailsDrawer model={null} />
+          </DiagramSessionProvider>
+        </ThemeContext>
+      </AppStoreContext>,
+    );
+    expect(askedDetails).toBe(0);
+    expect(askedChanges).toBe(0);
+  });
+
+  it('uses spec.tick for details and ignores mismatched previous pipeline results', () => {
+    const vm = '//compute.googleapis.com/projects/demo-web-1/zones/europe-west3-a/instances/web-1mnl';
+    const store = createAppStore({
+      location: {
+        pathname: '/diagram',
+        hash: `#snapshot=demo:M&lens=compute&detail=folders&tick=2026-03-15&selection=${vm}`,
+      },
+    });
+    // The snapshot is loaded and ready for demo:M.
+    store.updateSnapshot((snap) => ({
+      ...snap,
+      ref: 'demo:M',
+      status: 'ready',
+      source: { ref: 'demo:M', scope: 'demo', readTime: '2026-03-15T00:00:00Z', assets: 50 },
+    }));
+    // But pipeline.result still holds a stale result from previous snapshot demo:S.
+    const staleAnswer = {
+      source: {
+        ref: 'demo:S',
+        scope: 'demo-s',
+        readTime: '2026-03-01T00:00:00Z',
+        assets: 10,
+        tick: '2026-03-01',
+      },
+      diff: {
+        since: { tick: '2026-02-20', readTime: '2026-02-20T00:00:00Z' },
+      },
+    } as unknown as SceneAnswer;
+    store.updatePipeline((pipe) => ({
+      ...pipe,
+      result: {
+        key: 'demo:S-compute',
+        answer: staleAnswer,
+        layout: {} as unknown as Layout,
+      },
+    }));
+
+    const details = requestLog<{ snapshot: string; node: string; day: { tick: string | null } }>();
+    let askedChanges = 0;
+    const factory = (): DiagramWorkers => {
+      const workers = createInProcessWorkers();
+      workers.data.details = (snapshot, node, day, options) => {
+        const promise = Promise.resolve(null);
+        return details.record({ snapshot, node, day }, options?.signal, promise);
+      };
+      workers.data.changes = () => {
+        askedChanges += 1;
+        return Promise.resolve(null);
+      };
+      return workers;
+    };
+
+    render(
+      <AppStoreContext value={store}>
+        <ThemeContext value={{ preference: 'light', resolved: 'light', setPreference: () => undefined }}>
+          <DiagramSessionProvider factory={factory}>
+            <DetailsDrawer model={null} />
+          </DiagramSessionProvider>
+        </ThemeContext>
+      </AppStoreContext>,
+    );
+
+    // Queries demo:M with requested spec.tick '2026-03-15' (not demo:S's '2026-03-01').
+    expect(details.kept()).toEqual([{ snapshot: 'demo:M', node: vm, day: { tick: '2026-03-15' } }]);
+    // Does not query changes with stale demo:S diff.
+    expect(askedChanges).toBe(0);
   });
 });

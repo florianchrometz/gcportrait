@@ -8,7 +8,7 @@
  * change the view (lens, focus, detail, filters, drill-in, flips, selection, highlight) or to ask the
  * renderer for a camera glide (`jumpTo`). Feature code never calls the router, the workers or the renderer itself.
  */
-import type { ViewSpec } from '@gcportrait/model';
+import type { SnapshotRef, ViewSpec } from '@gcportrait/model';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
 
 import { measureDiagramArea } from '../diagram/autoDetail';
@@ -91,6 +91,23 @@ export function useSheet(id: string): readonly [boolean, (open: boolean) => void
 export function selectScope(state: AppState): string | null {
   if (!state.view.onDiagram || state.view.spec.snapshot === '') return null;
   return state.pipeline.result?.answer.source.scope ?? null;
+}
+
+/** The view's snapshot once its Graph is built and drawn (`''` otherwise). */
+export function selectLoadedSnapshot(state: AppState): SnapshotRef {
+  const { snapshot } = state;
+  return state.view.onDiagram && snapshot.status === 'ready' && snapshot.source?.ref === snapshot.ref
+    ? snapshot.ref
+    : '';
+}
+
+/**
+ * The read time of the data drawn on screen; `undefined` while nothing of the view's snapshot is drawn.
+ */
+export function selectDrawnReadTime(state: AppState): string | undefined {
+  const source = state.pipeline.result?.answer.source;
+  if (source === undefined || source.ref !== state.view.spec.snapshot) return undefined;
+  return source.readTime;
 }
 
 /**
