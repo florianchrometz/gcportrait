@@ -280,6 +280,19 @@ async function layout(
         for (const problem of await layoutProblems(page, TARGET)) found.push(`${where}: ${problem}`);
         for (const problem of await stickyProblems(page)) found.push(`${where}: ${problem}`);
         for (const problem of await axeProblems(page)) found.push(`${where}: ${problem}`);
+        if (width === widths[0]) {
+          const menuToggle = page.locator('#menu-toggle');
+          if (await menuToggle.isVisible()) {
+            await menuToggle.click();
+            if ((await menuToggle.getAttribute('aria-expanded')) !== 'true') {
+              found.push(`${where}: #menu-toggle did not open on click`);
+            }
+            await page.keyboard.press('Escape');
+            if ((await menuToggle.getAttribute('aria-expanded')) !== 'false') {
+              found.push(`${where}: #menu-toggle did not close on Escape while focused`);
+            }
+          }
+        }
         const unfolded = await setDisclosures(page, true);
         // The names once per page and theme, with every disclosure unfolded, so no link is folded out of the tree.
         if (width === widths[0]) {

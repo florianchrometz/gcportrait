@@ -142,10 +142,12 @@ const image = meta.socialImage;
       toggle.setAttribute('aria-expanded', String(!expanded()));
     });
     // Escape closes an open panel (where the button is shown, so the panel can fold) and returns to its button.
-    panel.addEventListener('keydown', (event) => {
+    const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape' || !expanded() || toggle.offsetParent === null) return;
       toggle.setAttribute('aria-expanded', 'false');
       toggle.focus();
-    });
+    };
+    toggle.addEventListener('keydown', onKeyDown);
+    panel.addEventListener('keydown', onKeyDown);
   }
 </script>

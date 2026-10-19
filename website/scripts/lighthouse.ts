@@ -13,7 +13,7 @@
  * theme is forced with Blink's preferredColorScheme setting, which is what prefers-color-scheme reads.
  */
 import { execFile } from 'node:child_process';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs, promisify } from 'node:util';
@@ -22,6 +22,11 @@ import { chromium } from 'playwright';
 
 import { DEMO_URL, SITE_URL } from '../src/site.js';
 import { serve } from './serve.js';
+
+class UsageError extends Error {}
+
+type Theme = 'light' | 'dark';
+type Preset = 'desktop' | 'mobile';
 
 const LIGHTHOUSE = 'lighthouse@13.5.0';
 const THRESHOLDS: Readonly<Record<string, number>> = {
@@ -48,13 +53,25 @@ async function main(): Promise<number> {
       mobile: { type: 'boolean', default: false },
     },
   });
-  const themes = values.theme.length > 0 ? values.theme : ['light', 'dark'];
-  const presets = values.mobile
+  for (const theme of values.theme) {
+    if (theme !== 'light' && theme !== 'dark') throw new UsageError(`--theme ${theme}: light or dark`);
+  }
+  for (const preset of values.preset) {
+    if (preset !== 'desktop' && preset !== 'mobile')
+      throw new UsageError(`--preset ${preset}: desktop or mobile`);
+  }
+  const themes: readonly Theme[] = values.theme.length > 0 ? (values.theme as Theme[]) : ['light', 'dark'];
+  const presets: readonly Preset[] = values.mobile
     ? ['mobile']
     : values.preset.length > 0
-      ? values.preset
+      ? (values.preset as Preset[])
       : ['desktop', 'mobile'];
-  const sitemap = readFileSync(path.join(WEBSITE, 'dist', 'sitemap.xml'), 'utf8');
+  const sitemapPath = path.join(WEBSITE, 'dist', 'sitemap.xml');
+  if (!existsSync(sitemapPath)) {
+    console.error('website/dist/sitemap.xml is missing; run pnpm --filter @gcportrait/website build first.');
+    return 1;
+  }
+  const sitemap = readFileSync(sitemapPath, 'utf8');
   // The site's pages; the demo (/demo/) is the app, checked by the e2e suite and `… demo`.
   const all = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)]
     .map((match) => (match[1] ?? '').slice(SITE_URL.length))
@@ -126,7 +143,12 @@ main().then(
     process.exitCode = code;
   },
   (error: unknown) => {
-    console.error(error);
-    process.exitCode = 1;
+    if (error instanceof UsageError) {
+      console.error(`website lighthouse: ${error.message}`);
+      process.exitCode = 2;
+    } else {
+      console.error(error);
+      process.exitCode = 1;
+    }
   },
 );
