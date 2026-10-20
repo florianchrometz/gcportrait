@@ -1,6 +1,6 @@
 {
   "name": "@gcportrait/graph",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "gcportrait graph core: Snapshot + asset catalog → Graph (containment, relation edges, indexes, dangling references, Shared VPC), the timeline diff, and Graph + ViewSpec → Scene (lenses, focus views, filters, drill-in, detail levels).",
   "license": "Apache-2.0",

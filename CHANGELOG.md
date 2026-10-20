@@ -7,6 +7,18 @@ for people, and the release workflow publishes it as the GitHub release's notes 
 a version without a section takes its notes from the commits since the previous release tag, one group per
 area of their `Area: …` subject.
 
+## 1.0.1 (2026-10-20)
+
+- **App and Connect flow** (#269): merged the standalone Permissions page into the Connect page as a guided
+  step-by-step flow after sign-in (Step 1 · Choose your scope, Step 2 · Check and grant permissions,
+  Step 3 · Pull your inventory), added a Google "G" mark to the sign-in button, and redirected `/permissions`
+  to `/`.
+- **Branding and wordmark** (#270): unified the two-tone `gcportrait` wordmark (`gc` in blue and `portrait` in
+  surface ink) across the app top bar, website header and footer, and OpenGraph social cards.
+- **Self-hosting and documentation** (#268): removed the non-functional "Open in Cloud Shell" and "Run on
+  Google Cloud" buttons from the README, website and self-hosting guide in favour of the one-line installer
+  and `infra/deploy.sh`.
+
 ## 1.0.0 (2026-10-12)
 
 The first release of gcportrait.

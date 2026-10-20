@@ -1,6 +1,6 @@
 {
   "name": "@gcportrait/ingest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Streaming Cloud Asset Inventory ingestion for gcportrait: NDJSON line reader, normaliser, project index and snapshot assembly.",
   "license": "Apache-2.0",

@@ -1,6 +1,6 @@
 {
   "name": "gcportrait",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "A portrait of your Google Cloud environment: architecture diagrams from Cloud Asset Inventory data.",
   "license": "Apache-2.0",

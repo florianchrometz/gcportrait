@@ -227,7 +227,7 @@ describe('release-notes.mjs', () => {
   });
 
   it('reads a version’s section of the repository’s own CHANGELOG.md, the long form once', () => {
-    const own = releaseNotes({ root: REPO, tag: 'v1.0.0' });
+    const own = releaseNotes({ root: REPO, tag: 'v1.0.0', packageVersion: '1.0.0' });
     expect(own.startsWith(`${NON_AFFILIATION_LONG}\n\n## Changes\n\n`)).toBe(true);
     expect(own.split(NON_AFFILIATION_LONG).length - 1).toBe(1);
     for (const heading of ['Highlights', 'Diagrams', 'Timeline', 'Self-hosting', 'Known limitations']) {

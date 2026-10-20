@@ -132,6 +132,11 @@ Each worker subagent (or single-issue worker) must complete these four steps in 
   - Subject: `Area: imperative summary (#<N>)`
   - Body: what changed, why, and the verification commands run.
   - Trailer: `Closes #<N>.` (or `Part of #<N>; <what remains>.`).
+- When the target branch is a release milestone branch (`work/vX.Y.Z`), ensure `package.json` across the
+  workspace matches `X.Y.Z` (`pnpm release:version X.Y.Z`) and `CHANGELOG.md` includes the `## X.Y.Z`
+  summary before handing the branch to the maintainer, so tagging `vX.Y.Z` after merge passes the
+  `release-image.mjs` and `release-notes.mjs` version guards ([contributor-workflow
+  skill](../contributor-workflow/SKILL.md) §7).
 - Push the feature branch to `origin` (`git push -u origin <branch>`) once integrated onto the target feature
   branch so the commits are visible online, while leaving opening, reviewing and merging the pull request to
   the maintainer.

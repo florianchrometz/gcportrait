@@ -1,6 +1,6 @@
 {
   "name": "@gcportrait/catalog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "gcportrait asset catalog: product and lens data, the relation-rule engine, the compiler and the coverage check.",
   "license": "Apache-2.0",
