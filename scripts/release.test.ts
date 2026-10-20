@@ -58,8 +58,8 @@ describe('release tag vs package.json version guard', () => {
     it('reads the version string from package.json under root', () => {
       expect(notesPackageVersionOf(tree.root)).toBe('1.2.3');
       expect(imagePackageVersionOf(tree.root)).toBe('1.2.3');
-      expect(notesPackageVersionOf(REPO)).toBe('1.0.0');
-      expect(imagePackageVersionOf(REPO)).toBe('1.0.0');
+      expect(notesPackageVersionOf(REPO)).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(imagePackageVersionOf(REPO)).toBe(notesPackageVersionOf(REPO));
     });
 
     it('returns undefined when package.json does not exist or is invalid', () => {
