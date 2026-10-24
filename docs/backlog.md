@@ -2,7 +2,7 @@
 
 # Backlog
 
-The open work on gcportrait: questions only the maintainer can settle, what is left before the first release,
+The open work on gcportrait: questions only the maintainer can settle, hosting and release verification,
 and follow-ups. Start a task from an item here or from an issue ([AGENTS.md](../AGENTS.md), "How to work a
 task"); a change to a rule updates AGENTS.md in the same pull request. Take an item off this list in the pull
 request that settles it. The asset catalog keeps its own, more detailed backlog in
@@ -11,7 +11,7 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 | Section | What it holds |
 |---|---|
 | [1. Maintainer decisions](#1-maintainer-decisions) | Questions only the maintainer can settle. |
-| [2. Before the first release](#2-before-the-first-release) | By hand, once, around the `v1.0.0` tag. |
+| [2. Hosting and release verification](#2-hosting-and-release-verification) | Hosting settings, legal pages and release checks. |
 | [3. CI](#3-ci) | Follow-ups of the workflows. |
 | [4. Self-hosting and backend](#4-self-hosting-and-backend) | Paths to verify on a real instance, defects, hardening. |
 | [5. App](#5-app) | The diagram, the drawer, search, the timeline, the Connect and Permissions pages. |
@@ -34,16 +34,15 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - **Self-hosting decisions:** the preflight's 403 contracts; the Connect page's
   inline permission check.
 
-## 2. Before the first release
+## 2. Hosting and release verification
 
 - **DNS records** for `gcportrait.app` and `www` and the Pages settings (the custom domain with HTTPS
   enforced) ([website.md](website.md), "Deploying to GitHub Pages" and "DNS records").
-- **Make the repository and the ghcr.io package public, and tag `v1.0.0`** ([contributing.md, "9.
-  Releases"](contributing.md#9-releases)); the tag is the release workflow's first run.
+- **Confirm the ghcr.io package is public** ([contributing.md, "9.
+  Releases"](contributing.md#9-releases)).
 - **The legal pages** on the maintainer's website, checked against [legal/](legal/README.md): the privacy
-  notice at <https://florian-chrometz.de/legal/privacy-policy> must mention TelemetryDeck, which counts the
-  website's page views once it deploys (the inventory's row W4; [website.md](website.md), "Analytics"), and
-  describe the demo as the static build on GitHub Pages (rows W1 and DS1), with no server of its own; and the
+  notice at <https://florian-chrometz.de/legal/privacy-policy> must describe the demo as the static build on
+  GitHub Pages (the inventory's rows W1 and DS1), with no server of its own; and the
   data-processing inventory's placeholders (`[EMAIL PROVIDER]`, `[EMAIL PROVIDER LOCATION]`, `[DATE OF LEGAL
   REVIEW]`).
 - **Pricing.** Confirm against Google's pricing page that the Cloud Asset Inventory and Resource Manager calls
@@ -56,11 +55,11 @@ request that settles it. The asset catalog keeps its own, more detailed backlog 
 - A dependency cooldown (`cooldown` in `.github/dependabot.yml`, `minimumReleaseAge` in
   `pnpm-workspace.yaml`), the rest of security finding O6.
 - A `merge_group` trigger for `pr.yml` if a merge queue is ever enabled.
-- `pages.yml`'s website build duplicates CI's website job on pull requests.
 - actionlint does not shellcheck the composite actions' `run` steps (`.github/actions/setup`,
   `.github/actions/playwright`).
 - The Playwright cache-key race warning is harmless (a note only).
-- No CI job runs the website's phone check (`pnpm website:mobile`, 80 MB of WebKit per run).
+- The website's iPhone WebKit playback check remains local (`mobile --only playback`); CI runs the phone
+  layout and axe checks in Chromium ([website.md](website.md), "Building and checking").
 - `node scripts/exports.mjs --check` as a root script and a CI step.
 - Signing the image (cosign with the workflow's OIDC identity) and build provenance attestations.
 
@@ -184,8 +183,8 @@ Against the app's targets in the [layout skill](../.agents/skills/gcp-diagram-la
 - `pnpm website:lighthouse -- --page X` fails because pnpm passes the `--` through.
 - `THIRD_PARTY.md` lacks the GitHub mark the website uses (under GitHub's logo guidelines).
 - The fillable commands: `fillable.ts` on pages with no variable that spans two blocks; `YOUR_PROJECT` against
-  `YOUR_PROJECT_ID`; `YOUR_BUCKET`'s hint against its pattern; the Cloud Shell tutorial's tokens; "Clear
-  values" clears every page; the hidden hint's `aria-describedby`.
+  `YOUR_PROJECT_ID`; `YOUR_BUCKET`'s hint against its pattern; "Clear values" clears every page; the hidden
+  hint's `aria-describedby`.
 
 ## 9. Later
 
