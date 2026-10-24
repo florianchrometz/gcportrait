@@ -113,7 +113,14 @@ Each worker subagent (or single-issue worker) must complete these four steps in 
      `AGENTS.md` within 20 000 characters ([AGENTS.md](../../../AGENTS.md), "How this file works").
    - Use synthetic domains (`example.com`, `example.org`) and project numbers (`< 100000000000`) only
      ([AGENTS.md](../../../AGENTS.md), "Data and graph semantics").
-3. **Run the verification gate for the touched scope before committing**:
+3. **Prepare the final release version before verification**: When the target branch is a release
+   milestone branch (`work/vX.Y.Z`), set the workspace version with `pnpm release:version X.Y.Z` and
+   update `CHANGELOG.md` with its `## X.Y.Z` summary. After final versioning, run `pnpm catalog:build`,
+   then `CI=true pnpm media`. The catalog's package version changes the app bundle fingerprint even
+   when no visual source changed. Verify `pnpm media --check` and `node scripts/exports.mjs --check`;
+   include the generated media with the version bump in the verified tree.
+4. **Run the verification gate for the final tree before committing**: Run these checks after all
+   source changes, release versioning and media generation:
    - **Every change**: `pnpm check` (format, lint, typecheck, unit tests, catalog check, provenance,
      licences).
    - **Docs or skills changed**: `node scripts/user-docs.mjs`.
@@ -133,8 +140,8 @@ Each worker subagent (or single-issue worker) must complete these four steps in 
   - Body: what changed, why, and the verification commands run.
   - Trailer: `Closes #<N>.` (or `Part of #<N>; <what remains>.`).
 - When the target branch is a release milestone branch (`work/vX.Y.Z`), ensure `package.json` across the
-  workspace matches `X.Y.Z` (`pnpm release:version X.Y.Z`) and `CHANGELOG.md` includes the `## X.Y.Z`
-  summary before handing the branch to the maintainer, so tagging `vX.Y.Z` after merge passes the
+  workspace already matches `X.Y.Z` and `CHANGELOG.md` includes the `## X.Y.Z` summary verified in
+  step 2, so tagging `vX.Y.Z` after merge passes the
   `release-image.mjs` and `release-notes.mjs` version guards ([contributor-workflow
   skill](../contributor-workflow/SKILL.md) §7).
 - Push the feature branch to `origin` (`git push -u origin <branch>`) once integrated onto the target feature

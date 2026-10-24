@@ -193,8 +193,11 @@ Because `main` is protected by ruleset `#25366182`, a release follows a two-step
 
 1. **Version bump pull request**: On a topic branch (`work/<N>`), bump versions across all workspace
    packages with `pnpm release:version X.Y.Z`, update [CHANGELOG.md](../../../CHANGELOG.md) with a
-   `## X.Y.Z` section, commit, push, and open a PR against `main`. Once CI passes, rebase-merge the PR into
-   `main`.
+   `## X.Y.Z` section, then run `pnpm catalog:build` and `CI=true pnpm media`. The catalog embeds its
+   package version in the app bundle, so even a version-only change invalidates the media fingerprint.
+   Run `pnpm media --check` and `node scripts/exports.mjs --check` against that final tree, then commit
+   the version and generated media together. Push and open a PR against `main`; once CI passes,
+   rebase-merge it into `main`.
 2. **Push the release tag**: On the freshly merged and up-to-date `main` branch (`git checkout main && git
    pull --ff-only origin main`), create and push the version tag:
    `git tag vX.Y.Z && git push origin vX.Y.Z`.

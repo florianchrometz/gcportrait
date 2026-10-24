@@ -577,8 +577,11 @@ Then, per release: follow the two-step sequence under branch protection (ruleset
 1. **Version bump PR**: read `git log` since the last tag (`git log --oneline vX.Y.0..main`), choose the
    bump that matches it, run `pnpm release:version X.Y.Z` (`scripts/set-version.mjs`: one fixed version in
    the root's and every workspace package's `package.json`) on a topic branch, and optionally write the
-   version's `## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md). Open a pull request against `main` and
-   rebase-merge it once checks pass.
+   version's `## X.Y.Z` section in [CHANGELOG.md](../CHANGELOG.md). Run `pnpm catalog:build`, then
+   `CI=true pnpm media`: the catalog embeds its package version in the app bundle, so even a version-only
+   change invalidates the media fingerprint. Verify `pnpm media --check` and
+   `node scripts/exports.mjs --check` against the final tree, and commit the version and generated media
+   together. Open a pull request against `main` and rebase-merge it once checks pass.
 2. **Push the tag**: on the updated `main` branch (`git checkout main && git pull --ff-only origin main`),
    create and push the release tag: `git tag vX.Y.Z && git push origin vX.Y.Z`. Release tooling
    (`scripts/release-notes.mjs` and `scripts/release-image.mjs`) guards consistency, verifying that `tag`
